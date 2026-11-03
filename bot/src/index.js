@@ -40,6 +40,7 @@ const pendingKey = (r) => `${r.game}\u0000${r.msgId ?? `${r.player}#${r.puzzle}`
 const collector = new Collector({
   config,
   onResult: async (result, { edit }) => {
+    if (result.date < config.startDate) return; // prima dell'inizio delle statistiche
     pending.set(pendingKey(result), result);
     log(
       `📥 ${edit ? '(modificato) ' : ''}${puzzleLabel(result.game, result.puzzle)} – ${result.player}: ${result.score}`,
