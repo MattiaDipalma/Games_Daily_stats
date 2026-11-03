@@ -16,6 +16,8 @@ import {
   gridNode,
   hideTooltip,
   inRange,
+  LEADERBOARD_RULE,
+  leaderboardStats,
   lineChart,
   loadGame,
   loadNames,
@@ -288,8 +290,7 @@ const COLUMNS = [
 
 function renderLeaderboard(range) {
   const model = game.season;
-  const threshold = minGames(model, range);
-  const stats = sortStats(playerStats(model, range), state.sort, threshold);
+  const stats = sortStats(leaderboardStats(model, range), state.sort);
   const table = $('#leaderboard');
 
   // Krillion: la classifica è ripartita da zero, le partite vecchie contano solo nelle schede
@@ -333,9 +334,7 @@ function renderLeaderboard(range) {
     ),
   );
 
-  const qualifies = state.sort.key === 'avg' || state.sort.key === 'avgRank';
   const rows = stats.map((s, i) => {
-    const unq = qualifies && s.streak < threshold;
     const cells = {
       name: playerButton(s.name),
       games: fmt(s.games),
@@ -347,15 +346,14 @@ function renderLeaderboard(range) {
     };
     return el(
       'tr',
-      { class: unq ? 'unqualified' : null },
-      el('td', { class: 'pos' }, unq ? '–' : i + 1),
+      {},
+      el('td', { class: 'pos' }, i + 1),
       COLUMNS.map((c) => el('td', { class: c.cls }, cells[c.key])),
     );
   });
   table.replaceChildren(el('thead', {}, head), el('tbody', {}, rows));
 
-  const someUnqualified = qualifies && stats.some((s) => s.streak < threshold);
-  $('#lb-note').textContent = someUnqualified ? t('qualifyNote', { n: threshold }) : '';
+  $('#lb-note').textContent = t('qualifyNote', LEADERBOARD_RULE);
 
   // chi non è in classifica nel periodo (o non ha ancora giocato nella nuova): la scheda resta raggiungibile
   const inBoard = new Set(stats.map((s) => s.name));
@@ -453,9 +451,8 @@ function renderTrend(range) {
   if (!stats.length) return;
   const active = new Set(stats.map((s) => s.name));
   if (!state.selected) {
-    const threshold = minGames(model, range);
     state.selected = new Set(
-      sortStats(stats, { key: 'avg', dir: 'desc' }, threshold)
+      sortStats(leaderboardStats(model, range), { key: 'avg', dir: 'desc' })
         .slice(0, 3)
         .map((s) => s.name),
     );
@@ -513,10 +510,7 @@ function renderTrend(range) {
 function renderH2H(range) {
   const model = game.season;
   const card = $('#h2h-card');
-  const threshold = minGames(model, range);
-  const order = sortStats(playerStats(model, range), { key: 'avg', dir: 'desc' }, threshold).map(
-    (s) => s.name,
-  );
+  const order = sortStats(playerStats(model, range), { key: 'avg', dir: 'desc' }).map((s) => s.name);
   card.hidden = order.length < 2;
   if (order.length < 2) return;
   const idx = new Map(order.map((n, i) => [n, i]));

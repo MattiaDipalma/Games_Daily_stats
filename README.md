@@ -102,7 +102,7 @@ messaggio.
 Il sito è in [`docs/`](docs/) (HTML/CSS/JS, nessuna dipendenza). La home mostra per ogni gioco il podio
 dell'ultimo puzzle e chi è in testa; ogni pagina di gioco mostra:
 
-- il puzzle del giorno, con podio, risultati e chi non ha ancora giocato (si può andare ai giorni precedenti);
+- la classifica (media, partite, record, vittorie, posizione media, serie di giorni consecutivi); ci entra solo chi ha giocato almeno 4 volte negli ultimi 7 giorni, in tutti e tre i giochi (chi non ha i requisiti resta raggiungibile dalla sua scheda);
 - la classifica (media, partite, record, vittorie, posizione media, serie di giorni consecutivi);
 - il grafico dell'andamento (punteggio o media mobile su 7 partite);
 - il testa a testa tra ogni coppia di giocatori;
