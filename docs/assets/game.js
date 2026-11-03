@@ -33,7 +33,7 @@ import {
   showTooltip,
   sortStats,
   t,
-} from './core.js?v=1';
+} from './core.js?v=2';
 
 const id = document.documentElement.dataset.game;
 const def = GAMES[id];
@@ -227,7 +227,13 @@ function renderDay() {
           rank <= 3 && p.results.length > 1 ? MEDALS[rank - 1] : rank,
         ),
         el('span', { class: 'name' }, playerButton(r.player, false)),
-        el('span', { class: 'score' }, fmt(r.score)),
+        el(
+          'span',
+          { class: 'score' },
+          fmt(r.score),
+          // Krillion: la profondità raggiunta, 10 m per punto (come su krillion.io)
+          id === 'krillion' ? el('small', { class: 'depth' }, `−${fmt(r.score * 10)} m`) : null,
+        ),
         el('span', { class: 'grid' }, gridNode(id, r)),
         delta,
       );
@@ -362,7 +368,18 @@ function renderLeaderboard(range) {
   box.replaceChildren();
   if (others.length) {
     box.append(t('others'), ' ');
-    others.forEach((name, i) => box.append(i ? ', ' : '', playerButton(name, false)));
+    // nome e virgola insieme, così la virgola non va mai a capo da sola
+    others.forEach((name, i) =>
+      box.append(
+        i ? ' ' : '',
+        el(
+          'span',
+          { style: 'white-space:nowrap' },
+          playerButton(name, false),
+          i < others.length - 1 ? ',' : '',
+        ),
+      ),
+    );
   }
 }
 

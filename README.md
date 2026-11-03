@@ -5,7 +5,7 @@ una pagina per ogni gioco, ognuna col suo colore:
 
 | Gioco | Pagina | Colore |
 | --- | --- | --- |
-| 🦐 Krillion | `/krillion/` | blu scuro |
+| 🦐 Krillion | `/krillion/` | fondale marino in pixel art, ispirato a [krillion.io](https://krillion.io) |
 | 🎵 Songless | `/songless/` | nero |
 | 📏 Magnitudle | `/magnitudle/` | rosso |
 
@@ -27,7 +27,19 @@ Krillion #111 🦐
 🦑🐟🏮🐟🦑🦑🫧
 ```
 
-Il punteggio è il numero sulla riga dopo `Krillion #N`.
+Il punteggio è il numero sulla riga dopo `Krillion #N`: è la somma delle 7 risposte, una per simbolo.
+
+| Simbolo | ⬛ | 🫧 | 🐟 | 🦑 | 🏮 | 🌟 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Punti | 0 | 10 | 30 | 60 | 85 | 100 |
+
+Sul sito i simboli sono disegnati in pixel art e accanto a ogni punteggio c'è la profondità raggiunta,
+come su krillion.io: 10 m per punto (285 punti = −2850 m, il massimo 700 = −7000 m).
+
+La pagina di Krillion è un'immersione: in alto il cielo con la barca, poi l'acqua sempre più scura con
+pesci, meduse e bolle, e in fondo alla pagina il fondale marino. Sugli schermi larghi un profondimetro sul
+bordo destro va dalla superficie a −7000 m. Le animazioni si fermano se nel sistema è attivo "riduci
+movimento". Tutto questo è in [`docs/assets/krillion/`](docs/assets/krillion/) e non tocca le altre pagine.
 
 **La classifica è ripartita da zero con il Krillion #112.** Le partite del vecchio gruppo Krillion
 Daily (#79–#111, in [`docs/data/krillion-legacy.json`](docs/data/krillion-legacy.json)) contano lo
@@ -302,6 +314,11 @@ docs/                    il sito (GitHub Pages)
   assets/game.js         pagina di un gioco
   assets/home.js         home
   assets/style.css       stile e colori dei tre giochi
+  assets/krillion/       il fondale marino della pagina di Krillion:
+    sea.css                colori, caratteri pixel, cielo, acqua e fondale
+    sea.js                 nuvole, barca, pesci, meduse, bolle, fondale e profondimetro
+    sprites.js             gli sprite in pixel art, disegnati a caratteri
+  assets/fonts/          Silkscreen, Jersey 10 e Space Mono (licenza OFL, in OFL.txt)
   data/krillion.json     i risultati (uno per gioco, scritti dal bot)
   data/songless.json
   data/magnitudle.json
