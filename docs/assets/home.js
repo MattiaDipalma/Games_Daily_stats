@@ -11,11 +11,10 @@ import {
   fmtLongDate,
   fmtUpdated,
   loadGame,
+  leaderboardStats,
   loadNames,
-  minGames,
   mountShell,
   periodRange,
-  playerStats,
   sortStats,
   t,
 } from './core.js?v=1';
@@ -74,7 +73,7 @@ function card(id) {
     // in testa alla classifica (per Krillion quella ripartita da zero)
     const season = g.season;
     const range = periodRange(season, 'all');
-    const stats = sortStats(playerStats(season, range), { key: 'avg', dir: 'desc' }, minGames(season, range));
+    const stats = sortStats(leaderboardStats(season, range), { key: 'avg', dir: 'desc' });
     body.push(
       el(
         'p',

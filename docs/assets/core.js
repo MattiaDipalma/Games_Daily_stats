@@ -56,8 +56,7 @@ const I18N = {
     colWins: 'Vittorie',
     colAvgRank: 'Pos. media',
     colStreak: 'Serie',
-    qualifyNote:
-      'Chi non ha una serie attuale di almeno {n} partite di fila è in fondo alla classifica della media.',
+    qualifyNote: 'In classifica solo chi ha giocato almeno {n} volte negli ultimi {days} giorni.',
     seasonNote:
       'La classifica è ripartita da zero con il Krillion #{start}. Le partite di Krillion Daily (#{from}–#{to}) contano nelle statistiche personali: clicca su un nome.',
     seasonEmpty:
@@ -145,8 +144,7 @@ const I18N = {
     colWins: 'Siege',
     colAvgRank: 'Ø Rang',
     colStreak: 'Serie',
-    qualifyNote:
-      'Wer keine aktuelle Serie von mindestens {n} Spielen am Stück hat, steht in der Schnitt-Rangliste unten.',
+    qualifyNote: 'In der Rangliste nur, wer in den letzten {days} Tagen mindestens {n} Mal gespielt hat.',
     seasonNote:
       'Die Rangliste hat mit Krillion #{start} bei null neu begonnen. Die Spiele von Krillion Daily (#{from}–#{to}) zählen in den persönlichen Statistiken: Klick auf einen Namen.',
     seasonEmpty:
@@ -234,8 +232,7 @@ const I18N = {
     colWins: 'Wins',
     colAvgRank: 'Avg. rank',
     colStreak: 'Streak',
-    qualifyNote:
-      'Players without a current streak of at least {n} games in a row sit at the bottom of the average ranking.',
+    qualifyNote: 'Only players with at least {n} games in the last {days} days appear in the leaderboard.',
     seasonNote:
       'The leaderboard restarted from zero with Krillion #{start}. Games from Krillion Daily (#{from}–#{to}) count in the personal stats: tap a name.',
     seasonEmpty:
@@ -299,6 +296,9 @@ const DASHES = ['', '7 4', '1 5'];
 const DASH_CLASS = ['', ' dashed', ' dotted'];
 // partite minime nel periodo per stare in classifica (media e posizione media) insieme agli altri
 const MIN_GAMES = 3;
+// per stare in classifica: almeno MIN_RECENT partite negli ultimi RECENT_DAYS giorni
+const MIN_RECENT = 4;
+const RECENT_DAYS = 7;
 
 // ---------------------------------------------------------------------------
 // Preferenze (solo per comodità: se lo storage non è disponibile si va avanti)
@@ -761,6 +761,8 @@ export function playerStats(model, range) {
   return stats;
 }
 
+export const LEADERBOARD_RULE = { n: MIN_RECENT, days: RECENT_DAYS };
+
 export function minGames(model, range) {
   // serve una serie attuale di MIN_GAMES partite di fila;
   // se nel periodo ci sono meno puzzle di MIN_GAMES, basta averli giocati tutti
@@ -768,16 +770,32 @@ export function minGames(model, range) {
   return Math.max(1, Math.min(MIN_GAMES, n));
 }
 
-export function sortStats(stats, sort, threshold) {
+/**
+ * Classifica: ci entra solo chi ha giocato almeno MIN_RECENT volte negli ultimi RECENT_DAYS giorni
+ * (contati a partire dall'ultimo giorno con partite del gioco). Vale per tutti i giochi.
+ */
+export function leaderboardStats(model, range) {
+  const day = (x) => {
+    const d = model.def.numbered ? model.puzzles.get(x)?.date : dayIso(x);
+    const ms = d ? Date.parse(d) : NaN;
+    return Number.isFinite(ms) ? Math.floor(ms / 864e5) : null;
+  };
+  const days = model.puzzleList.map(day).filter((d) => d !== null);
+  const latest = days.length ? Math.max(...days) : null;
+  return playerStats(model, range).filter((s) => {
+    if (latest === null) return true;
+    const recent = (model.byPlayer.get(s.name) ?? []).filter((r) => {
+      const d = day(r.puzzle);
+      return d !== null && d > latest - RECENT_DAYS;
+    }).length;
+    return recent >= MIN_RECENT;
+  });
+}
+
+export function sortStats(stats, sort) {
   const dir = sort.dir === 'asc' ? 1 : -1;
   const value = (s) => (sort.key === 'best' ? s.best.score : sort.key === 'name' ? s.name : s[sort.key]);
-  const qualifies = sort.key === 'avg' || sort.key === 'avgRank';
   return [...stats].sort((a, b) => {
-    if (qualifies) {
-      const qa = a.streak >= threshold;
-      const qb = b.streak >= threshold;
-      if (qa !== qb) return qa ? -1 : 1;
-    }
     const va = value(a);
     const vb = value(b);
     const cmp = typeof va === 'string' ? va.localeCompare(vb, locale()) : va - vb;
