@@ -21,6 +21,16 @@ export const GAME_IDS = Object.keys(GAMES);
 /** Punti di Songless per posizione del quadrato verde (come nel bot). */
 export const SONGLESS_POINTS = [100, 85, 60, 30, 10];
 
+/** Punti di ogni risposta di Krillion (7 risposte, massimo 700): la somma dà il punteggio. */
+export const KRILLION_POINTS = new Map([
+  ['⬛', 0],
+  ['🫧', 10],
+  ['🐟', 30],
+  ['🦑', 60],
+  ['🏮', 85],
+  ['🌟', 100],
+]);
+
 const I18N = {
   it: {
     subtitle: 'Le statistiche del gruppo',
@@ -103,6 +113,7 @@ const I18N = {
     songlessHit: '{genre}: trovata al {n}° tentativo, {p} punti',
     songlessMiss: '{genre}: non trovata, 0 punti',
     magnitudleRound: 'Manche {n}: {p} punti',
+    krillionAnswer: 'Risposta {n}: {p} punti',
     homeHint: 'Scegli un gioco: classifica, andamento, testa a testa e la scheda di ogni giocatore.',
     homeNoData: 'Ancora nessun risultato.',
     homeLeader: 'In testa',
@@ -191,6 +202,7 @@ const I18N = {
     songlessHit: '{genre}: beim {n}. Versuch gefunden, {p} Punkte',
     songlessMiss: '{genre}: nicht gefunden, 0 Punkte',
     magnitudleRound: 'Runde {n}: {p} Punkte',
+    krillionAnswer: 'Antwort {n}: {p} Punkte',
     homeHint: 'Wähle ein Spiel: Rangliste, Verlauf, Direktvergleich und die Statistiken jedes Spielers.',
     homeNoData: 'Noch keine Resultate.',
     homeLeader: 'An der Spitze',
@@ -278,6 +290,7 @@ const I18N = {
     songlessHit: '{genre}: found on attempt {n}, {p} points',
     songlessMiss: '{genre}: not found, 0 points',
     magnitudleRound: 'Round {n}: {p} points',
+    krillionAnswer: 'Answer {n}: {p} points',
     homeHint: "Pick a game: leaderboard, trend, head to head and every player's stats.",
     homeNoData: 'No results yet.',
     homeLeader: 'Leading',
@@ -852,6 +865,31 @@ export function magnitudleRounds(grid) {
 
 /** Il risultato in forma compatta, diverso per ogni gioco. */
 export function gridNode(id, r) {
+  if (id === 'krillion') {
+    // un simbolo per risposta (sea.css li disegna in pixel art); il resto del messaggio resta testo
+    const symbols = [];
+    let rest = '';
+    for (const c of String(r.grid ?? '').replace(/️/g, '')) {
+      if (KRILLION_POINTS.has(c)) symbols.push(c);
+      else rest += c;
+    }
+    if (symbols.length) {
+      const tips = symbols.map((c, i) => t('krillionAnswer', { n: i + 1, p: KRILLION_POINTS.get(c) }));
+      rest = rest.replace(/\s+/g, ' ').trim();
+      return el(
+        'span',
+        { class: 'kr-grid' },
+        el(
+          'span',
+          { class: 'kr-syms', role: 'img', 'aria-label': tips.join('; ') },
+          symbols.map((c, i) =>
+            el('span', { class: `kr-sym kr-p${KRILLION_POINTS.get(c)}`, title: tips[i] }, c),
+          ),
+        ),
+        rest ? el('span', { class: 'kr-extra' }, ` ${rest}`) : null,
+      );
+    }
+  }
   if (id === 'songless') {
     const rows = songlessRows(r.grid);
     if (rows.length) {

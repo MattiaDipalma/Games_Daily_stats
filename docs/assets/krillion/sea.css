@@ -1,0 +1,948 @@
+/* Krillion – la pagina come un'immersione, ispirata a krillion.io: il cielo con la barca in alto,
+   l'acqua sempre più scura scendendo e il fondale marino in fondo alla pagina.
+   Caricato solo da krillion/index.html, dopo style.css. Gli sprite in pixel art (variabili --spr-*)
+   e gli elementi del mare li aggiunge sea.js. */
+
+@font-face {
+  font-family: 'Silkscreen';
+  src: url('../fonts/silkscreen-latin-400-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Silkscreen';
+  font-weight: 700;
+  src: url('../fonts/silkscreen-latin-700-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Jersey 10';
+  src: url('../fonts/jersey-10-latin-400-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  src: url('../fonts/space-mono-latin-400-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  font-weight: 700;
+  src: url('../fonts/space-mono-latin-700-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+html[data-game='krillion'] {
+  --page: #040d1c;
+  --surface: #0b1d33;
+  --surface-2: #123050;
+  --panel: rgba(6, 19, 36, 0.84);
+  --text: #eaf6ff;
+  --text-2: #a9c3d9;
+  --muted: #7f9ab3;
+  --grid: rgba(90, 214, 232, 0.13);
+  --axis: rgba(90, 214, 232, 0.3);
+  --border: rgba(90, 214, 232, 0.2);
+  --dash: rgba(90, 214, 232, 0.16);
+  --accent: #5ad6e8;
+  --pink: #ff4f7b;
+  --good: #5be3a5;
+  --bad: #ff7f97;
+  --div-pos: #1d8ea3;
+  --div-neg: #c2365f;
+  --div-mid: #0f2742;
+  --ref: #9db4c8;
+  --glow: transparent;
+  --radius: 4px;
+  --font: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --pixel: 'Silkscreen', 'Space Mono', ui-monospace, monospace;
+  --digits: 'Jersey 10', 'Silkscreen', ui-monospace, monospace;
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  background: var(--page);
+  font: 14px/1.55 var(--font);
+}
+
+::selection {
+  background: rgba(255, 79, 123, 0.35);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- cielo: nuvole, barca e onde in superficie ---------- */
+
+.top {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-bottom: 54px;
+  background: radial-gradient(150px 150px at 84% 34%, rgba(255, 186, 120, 0.15), transparent 70%),
+    linear-gradient(180deg, #121925 0%, #1b2433 45%, #2e3a4e 100%);
+}
+
+/* la barra di navigazione resta uguale in tutte le pagine */
+.top .bar {
+  font-family: var(--font-ui);
+}
+
+.tab[aria-current='page'] {
+  background: rgba(90, 214, 232, 0.12);
+  border-color: rgba(90, 214, 232, 0.4);
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* le nuvole attraversano il cielo da destra a sinistra, lentissime */
+.cloud {
+  left: 0;
+  top: var(--top);
+  opacity: 0.75;
+  transform: translateX(var(--x));
+  animation: drift var(--dur) linear var(--delay) infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(100vw);
+  }
+
+  to {
+    transform: translateX(-260px);
+  }
+}
+
+/* la barca dei pescatori, che dondola sulle onde */
+.sea-ready .top::before {
+  content: '';
+  position: absolute;
+  right: max(16px, calc(50% - 500px));
+  bottom: 6px;
+  width: 90px;
+  height: 39px;
+  background: var(--spr-boat) 0 0 / 100% 100% no-repeat;
+  transform-origin: 50% 85%;
+  animation: boat 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* le onde: il confine tra cielo e acqua */
+.sea-ready .top::after {
+  content: '';
+  position: absolute;
+  left: -48px;
+  right: -48px;
+  bottom: 0;
+  height: 12px;
+  background: var(--spr-wave) 0 0 / 48px 12px repeat-x;
+  animation: waves 7s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes boat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+
+  50% {
+    transform: translateY(2px) rotate(1.5deg);
+  }
+}
+
+@keyframes waves {
+  to {
+    transform: translateX(24px);
+  }
+}
+
+/* ---------- titolo ---------- */
+
+.hero {
+  padding-top: 26px;
+}
+
+.hero h1 {
+  gap: 14px;
+  font: 700 34px/1 var(--pixel);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #ffe8ee;
+  text-shadow:
+    -2px 0 rgba(255, 47, 91, 0.85),
+    2px 0 rgba(54, 214, 231, 0.85);
+}
+
+.sea-ready .hero-emoji {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  font-size: 0;
+  color: transparent;
+  text-shadow: none;
+  background: var(--spr-shrimp) 0 0 / 100% 100% no-repeat;
+}
+
+.sub {
+  margin-top: 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+
+.updated {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- acqua ---------- */
+
+.sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    #1d4466 0,
+    #163a5a 120px,
+    #11304e 7%,
+    #0c2540 20%,
+    #091d34 40%,
+    #07162a 65%,
+    #051124 85%,
+    #040d1c 100%
+  );
+}
+
+.spr {
+  position: absolute;
+  display: block;
+  background: 0 0 / 100% 100% no-repeat;
+}
+
+.rays {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: min(1000px, 45%);
+  -webkit-mask-image: linear-gradient(180deg, #000 10%, transparent);
+  mask-image: linear-gradient(180deg, #000 10%, transparent);
+}
+
+.ray {
+  position: absolute;
+  top: -60px;
+  left: var(--x);
+  width: var(--w);
+  height: 130%;
+  background: linear-gradient(90deg, transparent, rgba(150, 215, 255, 0.15) 50%, transparent);
+  transform: rotate(var(--rot));
+  transform-origin: 50% 0;
+  animation: ray var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes ray {
+  from {
+    opacity: 0.45;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* pesci: attraversano lo schermo e intanto salgono e scendono un poco */
+.swim {
+  left: 0;
+  top: var(--top);
+  transform: translateX(var(--x));
+  animation:
+    swim-right var(--dur) linear var(--delay) infinite,
+    bob 6s ease-in-out infinite;
+}
+
+.swim.left {
+  animation-name: swim-left, bob;
+}
+
+@keyframes swim-right {
+  from {
+    transform: translateX(-200px);
+  }
+
+  to {
+    transform: translateX(calc(100vw + 40px));
+  }
+}
+
+@keyframes swim-left {
+  from {
+    transform: translateX(calc(100vw + 40px));
+  }
+
+  to {
+    transform: translateX(-200px);
+  }
+}
+
+@keyframes bob {
+  50% {
+    translate: 0 7px;
+  }
+}
+
+.jelly {
+  left: var(--left);
+  top: var(--top);
+  opacity: 0.85;
+  animation: jelly var(--dur) ease-in-out var(--delay) infinite;
+}
+
+@keyframes jelly {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1 1;
+  }
+
+  25% {
+    scale: 1.06 0.92;
+  }
+
+  50% {
+    translate: 10px -70px;
+    scale: 1 1;
+  }
+
+  75% {
+    scale: 1.06 0.92;
+  }
+}
+
+.bubble {
+  position: absolute;
+  left: var(--left);
+  top: var(--top);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  border: 1px solid rgba(190, 240, 255, 0.6);
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.7) 0 1px, transparent 1.5px);
+  opacity: 0;
+  animation: rise var(--dur) linear var(--delay) infinite;
+}
+
+.bubble.rising {
+  top: auto;
+  bottom: 70px;
+}
+
+@keyframes rise {
+  0% {
+    opacity: 0;
+    translate: 0 0;
+  }
+
+  10% {
+    opacity: 0.9;
+  }
+
+  50% {
+    translate: 5px -120px;
+  }
+
+  85% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 0;
+    translate: -3px -240px;
+  }
+}
+
+/* neve marina: puntini che scendono lentissimi */
+.snow {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: -240px;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: radial-gradient(1.2px 1.2px at 30px 40px, #cfe9ff, transparent),
+    radial-gradient(1px 1px at 128px 166px, #cfe9ff, transparent),
+    radial-gradient(1.5px 1.5px at 202px 92px, #9fd8ff, transparent),
+    radial-gradient(1px 1px at 74px 214px, #cfe9ff, transparent),
+    radial-gradient(1px 1px at 172px 12px, #9fd8ff, transparent);
+  background-size: 240px 240px;
+  animation: snow 50s linear infinite;
+}
+
+@keyframes snow {
+  to {
+    transform: translateY(240px);
+  }
+}
+
+/* ---------- fondale ---------- */
+
+.floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 190px;
+}
+
+.floor-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(70% 90% at 50% 100%, rgba(63, 191, 216, 0.12), transparent 70%);
+}
+
+.sand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40px;
+  background: var(--spr-sand) 0 0 / 128px 40px repeat-x;
+}
+
+.thing {
+  left: var(--left);
+  bottom: 30px;
+  translate: -50% 0;
+}
+
+.thing.low {
+  bottom: 22px;
+}
+
+.kelp {
+  transform-origin: 50% 100%;
+  animation: sway var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes sway {
+  from {
+    rotate: -5deg;
+  }
+
+  to {
+    rotate: 5deg;
+  }
+}
+
+.crab {
+  left: var(--left);
+  bottom: 26px;
+  animation: crab 26s ease-in-out infinite alternate;
+}
+
+@keyframes crab {
+  from {
+    transform: translateX(-14vw);
+  }
+
+  to {
+    transform: translateX(12vw);
+  }
+}
+
+.angler {
+  top: auto;
+  bottom: 96px;
+}
+
+/* la lucina della rana pescatrice */
+.angler::after {
+  content: '';
+  position: absolute;
+  left: 33px;
+  top: -12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 230, 128, 0.55), transparent 65%);
+  animation: glow 2.6s ease-in-out infinite;
+}
+
+@keyframes glow {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ---------- profondimetro (solo schermi larghi) ---------- */
+
+.ruler {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 40px;
+  width: 110px;
+  font: 10px/1 var(--font);
+  color: rgba(90, 214, 232, 0.55);
+}
+
+.ruler::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 24px;
+  border-right: 1px dashed rgba(90, 214, 232, 0.22);
+}
+
+.tick {
+  position: absolute;
+  right: 24px;
+  top: var(--y);
+  width: 6px;
+  border-top: 1px solid rgba(90, 214, 232, 0.35);
+}
+
+.tick.major {
+  width: 12px;
+  border-top-color: rgba(90, 214, 232, 0.6);
+}
+
+.tick[data-label]::before {
+  content: attr(data-label);
+  position: absolute;
+  right: calc(100% + 6px);
+  top: -6px;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #040d1c;
+}
+
+.zone {
+  position: absolute;
+  right: 4px;
+  top: var(--y);
+  writing-mode: vertical-rl;
+  transform: translateY(-50%);
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(90, 214, 232, 0.4);
+}
+
+@media (min-width: 1240px) {
+  .ruler {
+    display: block;
+  }
+}
+
+/* ---------- pannelli ---------- */
+
+.card,
+.tile {
+  background: var(--panel);
+  border-radius: var(--radius);
+}
+
+.card {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+/* titoli come le etichette di krillion.io: maiuscolo e una linea tratteggiata */
+.card > h2,
+.card-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 400 16px/1.2 var(--pixel);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.card > h2::after,
+.card-head h2::after {
+  content: '';
+  flex: 1;
+  min-width: 16px;
+  border-top: 1px dashed var(--axis);
+}
+
+.card-head h2 {
+  flex: 1;
+}
+
+.note,
+.lb-note,
+.others,
+#lb-note,
+.card > .muted.small {
+  font-size: 12px;
+}
+
+.empty-note {
+  border: 1px dashed var(--axis);
+  border-radius: var(--radius);
+  background: rgba(4, 13, 28, 0.5);
+}
+
+.icon-btn {
+  border-radius: 3px;
+  border-color: rgba(90, 214, 232, 0.35);
+  background: rgba(90, 214, 232, 0.06);
+  color: var(--accent);
+}
+
+/* ---------- puzzle del giorno ---------- */
+
+.day-title-wrap h2 {
+  font: 400 24px/1.1 var(--pixel);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+
+.day-title-wrap p {
+  margin-top: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.day-list li {
+  border-top: 1px dashed var(--dash);
+  padding: 12px 4px;
+}
+
+.day-list .rank {
+  font: 400 26px/1 var(--digits);
+  color: var(--muted);
+}
+
+.day-list .name {
+  font-size: 15px;
+}
+
+.day-list .score {
+  font: 400 36px/0.9 var(--digits);
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* la profondità raggiunta, come su krillion.io: 10 m per punto */
+.day-list .depth {
+  margin-left: 8px;
+  font: 400 11px/1 var(--font);
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.day-list .delta {
+  font-size: 11px;
+}
+
+#day-missing {
+  font-size: 12px;
+}
+
+/* i simboli dei risultati in pixel art (senza sea.js restano le emoji) */
+.kr-syms {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+}
+
+.sea-ready .kr-sym {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  font-size: 0;
+  color: transparent;
+  background: 0 0 / 100% 100% no-repeat;
+}
+
+.sea-ready .kr-p0 {
+  background-image: var(--spr-p0);
+}
+
+.sea-ready .kr-p10 {
+  background-image: var(--spr-p10);
+}
+
+.sea-ready .kr-p30 {
+  background-image: var(--spr-p30);
+}
+
+.sea-ready .kr-p60 {
+  background-image: var(--spr-p60);
+}
+
+.sea-ready .kr-p85 {
+  background-image: var(--spr-p85);
+}
+
+.sea-ready .kr-p100 {
+  background-image: var(--spr-p100);
+}
+
+.kr-extra {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ---------- filtri e riquadri ---------- */
+
+#period-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.seg {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.seg button {
+  border-radius: 2px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.seg.small button {
+  font-size: 11px;
+}
+
+.seg button[aria-pressed='true'] {
+  background: rgba(90, 214, 232, 0.16);
+  color: #c8f6ff;
+  box-shadow: inset 0 0 0 1px rgba(90, 214, 232, 0.45);
+}
+
+.tile .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.tile .value {
+  margin-top: 6px;
+  font: 400 38px/1 var(--digits);
+  color: #fff;
+}
+
+.tile .hint {
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+/* ---------- tabelle ---------- */
+
+.lb th,
+.lb td {
+  border-top: 1px dashed var(--dash);
+}
+
+.lb th {
+  font-size: 10.5px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  border-top: 0;
+}
+
+.lb th[aria-sort] button {
+  color: #fff;
+}
+
+.lb td {
+  font-size: 13px;
+}
+
+.lb td.c-avg {
+  font-weight: 700;
+  color: #fff;
+}
+
+.lb tbody tr:hover td {
+  background: rgba(90, 214, 232, 0.05);
+}
+
+@media (max-width: 700px) {
+  #leaderboard tr {
+    border-top: 1px dashed var(--dash);
+  }
+
+  #leaderboard td.c-avg {
+    font: 400 24px/1 var(--digits);
+  }
+}
+
+/* ---------- grafici ---------- */
+
+.chip {
+  border-radius: 3px;
+  background: var(--panel);
+  font-size: 12px;
+}
+
+.chip[aria-pressed='true'] {
+  background: rgba(90, 214, 232, 0.12);
+  border-color: rgba(90, 214, 232, 0.5);
+}
+
+.chip.static {
+  background: none;
+}
+
+.chart text,
+.chart .end-label {
+  font-family: var(--font);
+}
+
+.chart text {
+  font-size: 10.5px;
+}
+
+.chart .gridline {
+  stroke-dasharray: 2 4;
+}
+
+.tooltip {
+  background: #0a1f36;
+  border-color: rgba(90, 214, 232, 0.4);
+  border-radius: 3px;
+  font-family: var(--font);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.h2h td div {
+  border-radius: 2px;
+}
+
+/* ---------- scheda giocatore ---------- */
+
+dialog {
+  background: #071a2e;
+  border-color: rgba(90, 214, 232, 0.35);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+}
+
+dialog::backdrop {
+  background: rgba(2, 8, 18, 0.75);
+}
+
+#pd-title {
+  font: 400 22px/1.2 var(--pixel);
+  text-transform: uppercase;
+  color: #fff;
+}
+
+dialog h3 {
+  font: 400 14px/1.2 var(--pixel);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.small-tiles .tile {
+  background: rgba(4, 13, 28, 0.9);
+}
+
+.small-tiles .value {
+  font-size: 28px;
+}
+
+/* ---------- piè di pagina, sopra il fondale ---------- */
+
+.foot {
+  padding-bottom: 210px;
+  font-size: 12px;
+}
+
+/* ---------- schermi stretti ---------- */
+
+@media (max-width: 640px) {
+  .opt {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero h1 {
+    font-size: 26px;
+  }
+
+  .sea-ready .hero-emoji {
+    width: 28px;
+    height: 28px;
+  }
+
+  .top {
+    padding-bottom: 50px;
+  }
+
+  .day-title-wrap h2 {
+    font-size: 19px;
+  }
+
+  .day-list .score {
+    font-size: 30px;
+  }
+
+  .tile .value {
+    font-size: 32px;
+  }
+
+  .sea-ready .kr-sym {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ---------- "riduci movimento": tutto fermo ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .sea *,
+  .sea *::after,
+  .sky *,
+  .snow,
+  .top::before,
+  .top::after {
+    animation: none !important;
+  }
+
+  .bubble {
+    opacity: 0.5;
+  }
+}

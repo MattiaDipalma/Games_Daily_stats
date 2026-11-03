@@ -17,7 +17,7 @@ import {
   periodRange,
   sortStats,
   t,
-} from './core.js?v=1';
+} from './core.js?v=2';
 
 const demo = new URLSearchParams(location.search).has('demo');
 const shell = mountShell({ page: 'home', base: '', onLang: render });
