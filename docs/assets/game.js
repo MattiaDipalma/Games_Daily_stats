@@ -306,7 +306,11 @@ function renderLeaderboard(range) {
       ? t('seasonNote', { start: game.seasonStart, from: game.legacyRange.from, to: game.legacyRange.to })
       : '';
 
-  $('#lb-empty').textContent = stats.length ? '' : t('seasonEmpty', { start: game.seasonStart ?? '' });
+  $('#lb-empty').textContent = stats.length
+    ? ''
+    : game.seasonStart
+      ? t('seasonEmpty', { start: game.seasonStart })
+      : t('lbNone', LEADERBOARD_RULE);
   table.hidden = !stats.length;
 
   const head = el(

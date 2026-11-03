@@ -30,6 +30,8 @@ export function loadConfig() {
     groupJid: env.GROUP_JID?.trim() || null,
     myName: env.MY_NAME?.trim() || null,
     timeZone: env.TIMEZONE || 'Europe/Zurich',
+    // i messaggi con data precedente (YYYY-MM-DD) vengono ignorati
+    startDate: /^\d{4}-\d{2}-\d{2}$/.test(env.START_DATE?.trim() ?? '') ? env.START_DATE.trim() : '2026-11-04',
 
     githubToken: env.GITHUB_TOKEN?.trim() || null,
     githubRepo: env.GITHUB_REPO?.trim() || 'MattiaDipalma/Games_Daily_stats',

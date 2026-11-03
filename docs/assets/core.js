@@ -71,6 +71,8 @@ const I18N = {
       'La classifica è ripartita da zero con il Krillion #{start}. Le partite di Krillion Daily (#{from}–#{to}) contano nelle statistiche personali: clicca su un nome.',
     seasonEmpty:
       'La classifica riparte da zero: appena qualcuno manda il Krillion #{start} (o uno successivo) nel gruppo, comparirà qui.',
+    lbNone:
+      'Nessuno è ancora in classifica: servono almeno {n} partite negli ultimi {days} giorni.',
     others: 'Senza partite in classifica nel periodo:',
     trend: 'Andamento',
     trendPlayers: 'Giocatori nel grafico',
@@ -160,6 +162,8 @@ const I18N = {
       'Die Rangliste hat mit Krillion #{start} bei null neu begonnen. Die Spiele von Krillion Daily (#{from}–#{to}) zählen in den persönlichen Statistiken: Klick auf einen Namen.',
     seasonEmpty:
       'Die Rangliste beginnt bei null: Sobald jemand Krillion #{start} (oder ein späteres) in die Gruppe schickt, erscheint es hier.',
+    lbNone:
+      'Noch niemand in der Rangliste: Es braucht mindestens {n} Spiele in den letzten {days} Tagen.',
     others: 'Ohne Spiele in der Rangliste im Zeitraum:',
     trend: 'Verlauf',
     trendPlayers: 'Spieler im Diagramm',
@@ -249,6 +253,8 @@ const I18N = {
       'The leaderboard restarted from zero with Krillion #{start}. Games from Krillion Daily (#{from}–#{to}) count in the personal stats: tap a name.',
     seasonEmpty:
       'The leaderboard restarts from zero: as soon as someone posts Krillion #{start} (or a later one) in the group, it will show up here.',
+    lbNone:
+      'Nobody is on the leaderboard yet: it takes at least {n} games in the last {days} days.',
     others: 'No leaderboard games in this period:',
     trend: 'Trend',
     trendPlayers: 'Players in the chart',
