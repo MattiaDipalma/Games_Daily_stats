@@ -359,7 +359,7 @@ function renderLeaderboard(range) {
 
   // chi non è in classifica nel periodo (o non ha ancora giocato nella nuova): la scheda resta raggiungibile
   const inBoard = new Set(stats.map((s) => s.name));
-  const others = game.career.players.filter((p) => !inBoard.has(p));
+  const others = game.career.players.filter((p) => !inBoard.has(p) && !game.hidden.has(p.toLowerCase()));
   const box = $('#lb-others');
   box.replaceChildren();
   if (others.length) {

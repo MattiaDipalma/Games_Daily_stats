@@ -244,6 +244,9 @@ dentro.
 }
 ```
 
+Per togliere qualcuno dalla classifica senza cancellare i suoi dati aggiungi il suo nome (quello da
+mostrare) a `"_hidden": ["Mael", "Nils"]`: basta toglierlo da lì per farlo tornare.
+
 `names.json` è pubblico: non metterci numeri di telefono completi. Per quelli crea invece
 `bot/aliases.json` partendo da [`bot/aliases.example.json`](bot/aliases.example.json): il bot salva
 direttamente il nome giusto (dopo un riavvio) e lo applica anche ai risultati già salvati alla scrittura

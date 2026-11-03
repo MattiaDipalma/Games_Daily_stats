@@ -509,6 +509,8 @@ export async function loadNames(base) {
   try {
     const names = await loadJson(`${base}data/names.json`);
     const map = new Map();
+    // "_hidden": nomi (già rinominati) che non compaiono in classifica; i dati restano nei file.
+    map.hidden = new Set((Array.isArray(names?._hidden) ? names._hidden : []).map(nameKey));
     for (const [from, to] of Object.entries(names ?? {})) {
       if (!from.startsWith('_') && typeof to === 'string' && to.trim()) map.set(nameKey(from), to.trim());
     }
@@ -591,7 +593,8 @@ export function colorOf(model, name) {
  * @param {object[]} rows risultati come nei file JSON
  * @param {{ def: object, names?: Map<string, string>, colors?: Map }} opts
  */
-export function prepare(rows, { def, names = new Map(), colors = null }) {
+export function prepare(rows, { def, names = new Map(), colors = null, hide = false }) {
+  const hidden = hide ? (names.hidden ?? new Set()) : new Set();
   // Due nomi di WhatsApp possono diventare la stessa persona: un risultato per puzzle, vale il primo.
   const byKey = new Map();
   for (const r of rows ?? []) {
@@ -599,7 +602,7 @@ export function prepare(rows, { def, names = new Map(), colors = null }) {
     const x = puzzleX(def, r.puzzle);
     if (!Number.isFinite(x)) continue;
     const player = names.get(nameKey(r.player)) ?? r.player.trim();
-    if (!player) continue;
+    if (!player || hidden.has(nameKey(player))) continue;
     const key = `${x}\u0000${player.toLowerCase()}`;
     const prev = byKey.get(key);
     if (!prev || (r.ts ?? Infinity) < (prev.ts ?? Infinity)) {
@@ -673,17 +676,16 @@ export async function loadGame(id, { base = '', names = new Map(), demo = false 
   // Classifica separata solo per Krillion: le partite del vecchio gruppo non contano mai, e quelle
   // nuove contano da seasonStart in poi.
   const separate = Number.isFinite(seasonStart);
-  const season = separate
-    ? prepare(
-        current.filter((r) => puzzleX(def, r.puzzle) >= seasonStart),
-        { def, names, colors: career.colors },
-      )
-    : career;
+  const season = prepare(
+    separate ? current.filter((r) => puzzleX(def, r.puzzle) >= seasonStart) : [...legacy, ...current],
+    { def, names, colors: career.colors, hide: true },
+  );
   const legacyPuzzles = legacy.map((r) => r.puzzle).filter(Number.isFinite);
   return {
     def,
     career,
     season,
+    hidden: names.hidden ?? new Set(),
     updatedAt,
     seasonStart: separate ? seasonStart : null,
     legacyRange: legacyPuzzles.length
