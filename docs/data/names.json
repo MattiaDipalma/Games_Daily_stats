@@ -1,9 +1,15 @@
 {
-  "_comment": "Nomi mostrati sul sito, per tutti e tre i giochi. A sinistra il nome come compare nei file dei dati (come arriva da WhatsApp), a destra il nome da mostrare.",
+  "_comment": "Nomi mostrati sul sito, per tutti e tre i giochi. A sinistra il nome come compare nei file dei dati (come arriva da WhatsApp), a destra il nome da mostrare. \"_hidden\" elenca chi non compare più in classifica (i loro dati restano nei file e basta toglierli da qui per farli tornare).",
+  "_hidden": ["Mael", "Nils"],
   "Nils Geigy": "Nils",
   "+49∙∙∙∙∙∙∙∙73": "Daniel",
   "+41∙∙∙∙∙∙∙46": "Flu",
   "+41∙∙∙∙∙∙∙90": "Anna",
+  "+49∙∙∙∙∙∙∙∙∙26": "Mei",
+  "06": "Brenn",
+  "Pierin": "Men",
   "Mattia": "Fuldup",
-  "elico": "Elia"
+  "elico": "Elia",
+  "flo": "Flo",
+  "rafael": "Rafael"
 }
