@@ -1,6 +1,6 @@
 /* Games Daily – stile comune. Ogni gioco ha il suo tema (html[data-game]):
    Krillion blu scuro, Songless nero, Magnitudle rosso. La home è grigio scuro.
-   I colori dei giocatori (--s1…--s8) sono la palette categoriale per sfondi scuri,
+   I colori dei giocatori (--s1…--s25) sono la palette categoriale per sfondi scuri,
    verificata (contrasto ≥ 3:1 e distinguibili anche per daltonici) su tutti e tre i temi. */
 
 :root {
@@ -30,6 +30,23 @@
   --s6: #008300;
   --s7: #9085e9;
   --s8: #e66767;
+  --s9: #f2c94c;
+  --s10: #56ccf2;
+  --s11: #bb6bd9;
+  --s12: #9be15d;
+  --s13: #ff9f68;
+  --s14: #2dd4bf;
+  --s15: #f472b6;
+  --s16: #a3a3ff;
+  --s17: #d4a373;
+  --s18: #84cc16;
+  --s19: #fb7185;
+  --s20: #22d3ee;
+  --s21: #e879f9;
+  --s22: #facc15;
+  --s23: #94a3b8;
+  --s24: #f97316;
+  --s25: #4ade80;
   --ref: #898781;
   --radius: 14px;
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;

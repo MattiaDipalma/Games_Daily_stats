@@ -289,11 +289,8 @@ const I18N = {
 
 const LOCALES = { it: 'it-CH', de: 'de-CH', en: 'en-GB' };
 export const MEDALS = ['🥇', '🥈', '🥉'];
-// colori dei giocatori: 8 tinte in ordine fisso; dal nono in poi la stessa tinta
-// con la linea tratteggiata, poi punteggiata (il colore da solo non basta mai)
-const SLOTS = 8;
-const DASHES = ['', '7 4', '1 5'];
-const DASH_CLASS = ['', ' dashed', ' dotted'];
+// colori dei giocatori: 25 tinte in ordine fisso, sempre linee continue
+const SLOTS = 25;
 // partite minime nel periodo per stare in classifica (media e posizione media) insieme agli altri
 const MIN_GAMES = 3;
 // per stare in classifica: almeno MIN_RECENT partite negli ultimi RECENT_DAYS giorni
@@ -578,8 +575,7 @@ function buildColors(byPlayer) {
     );
   return new Map(
     order.map(({ name }, i) => {
-      const style = Math.floor(i / SLOTS) % DASHES.length;
-      return [name, { color: `var(--s${(i % SLOTS) + 1})`, dash: DASHES[style], cls: DASH_CLASS[style] }];
+      return [name, { color: `var(--s${(i % SLOTS) + 1})`, dash: '', cls: '' }];
     }),
   );
 }
