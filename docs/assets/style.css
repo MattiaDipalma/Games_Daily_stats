@@ -1,0 +1,1344 @@
+/* Games Daily – stile comune. Ogni gioco ha il suo tema (html[data-game]):
+   Krillion blu scuro, Songless nero, Magnitudle rosso. La home è grigio scuro.
+   I colori dei giocatori (--s1…--s8) sono la palette categoriale per sfondi scuri,
+   verificata (contrasto ≥ 3:1 e distinguibili anche per daltonici) su tutti e tre i temi. */
+
+:root {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-2: #262624;
+  --text: #ffffff;
+  --text-2: #c3c2b7;
+  --muted: #9a9890;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+  --accent: #6aa8ff;
+  --glow: rgba(255, 255, 255, 0.05);
+  --good: #0ca30c;
+  --bad: #e66767;
+  --div-pos: #3987e5;
+  --div-neg: #e66767;
+  --div-mid: #383835;
+  --bar: #e0303c;
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s4: #c98500;
+  --s5: #d55181;
+  --s6: #008300;
+  --s7: #9085e9;
+  --s8: #e66767;
+  --ref: #898781;
+  --radius: 14px;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Krillion: blu scuro */
+[data-game='krillion'] {
+  --page: #0a1a36;
+  --surface: #11254a;
+  --surface-2: #1b3563;
+  --text: #f2f6ff;
+  --text-2: #b9c7e6;
+  --muted: #8ea0c8;
+  --grid: #1c3360;
+  --axis: #2a4677;
+  --border: rgba(150, 185, 255, 0.16);
+  --accent: #6aa8ff;
+  --glow: rgba(57, 135, 229, 0.38);
+  --good: #3ccf6e;
+  --bad: #ff8080;
+  --div-mid: #1b3563;
+  --ref: #93a3c6;
+}
+
+/* Songless: nero */
+[data-game='songless'] {
+  --page: #000000;
+  --surface: #121212;
+  --surface-2: #1f1f1f;
+  --text: #ffffff;
+  --text-2: #c9c9c9;
+  --muted: #929292;
+  --grid: #232323;
+  --axis: #333333;
+  --border: rgba(255, 255, 255, 0.13);
+  --accent: #3ccf6e;
+  --glow: rgba(60, 207, 110, 0.13);
+  --good: #3ccf6e;
+  --bad: #ff7070;
+  --div-mid: #2a2a2a;
+  --ref: #9a9a9a;
+}
+
+/* Magnitudle: rosso */
+[data-game='magnitudle'] {
+  --page: #3a0a10;
+  --surface: #4c0f16;
+  --surface-2: #641822;
+  --text: #fff4f4;
+  --text-2: #f6c9cb;
+  --muted: #e09fa3;
+  --grid: #62202a;
+  --axis: #7c2c36;
+  --border: rgba(255, 190, 190, 0.18);
+  --accent: #ffc2c2;
+  --glow: rgba(239, 35, 60, 0.5);
+  --good: #5fe08a;
+  --bad: #ffb0b0;
+  --div-mid: #641822;
+  /* manche di Magnitudle: più punti = rosso più acceso (testo bianco ≥ 4.5:1) */
+  --bar: #e0303c;
+  --ref: #e8b0b3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--page);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(1200px 460px at 50% -190px, var(--glow), transparent 72%) no-repeat var(--page);
+  color: var(--text);
+  font: 15px/1.5 var(--font);
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--accent);
+}
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 13px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 650;
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 650;
+  margin: 20px 0 8px;
+}
+
+/* ---------- intestazione e navigazione ---------- */
+
+.top {
+  padding: 12px 0 4px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px 10px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 6px 0;
+}
+
+.brand:hover {
+  text-decoration: underline;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+/* ogni linguetta usa i colori del proprio gioco (ha anche lei data-game) */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.tab[aria-current='page'] {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+  font-weight: 600;
+}
+
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+select {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.hero {
+  padding-top: 22px;
+  padding-bottom: 4px;
+}
+
+.hero h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sub {
+  margin: 4px 0 0;
+  color: var(--text-2);
+}
+
+.updated {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.status {
+  margin: 24px 0;
+  color: var(--text-2);
+}
+
+.status:empty {
+  display: none;
+}
+
+/* ---------- card ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin: 16px 0;
+  min-width: 0;
+}
+
+.card > h2 {
+  margin-bottom: 12px;
+}
+
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.note {
+  margin: -4px 0 10px;
+}
+
+.note:empty,
+.empty-note:empty,
+.others:empty,
+.scoring:empty {
+  display: none;
+}
+
+.empty-note {
+  margin: 6px 0;
+  padding: 22px 12px;
+  text-align: center;
+  color: var(--text-2);
+  border: 1px dashed var(--axis);
+  border-radius: 10px;
+}
+
+.others {
+  line-height: 1.8;
+}
+
+.others .player-btn {
+  font-weight: 600;
+}
+
+/* ---------- puzzle del giorno ---------- */
+
+.day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.day-title-wrap {
+  text-align: center;
+}
+
+.day-title-wrap h2 {
+  font-size: 22px;
+}
+
+.day-title-wrap p {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+
+.day-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.day-list li {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'rank name score'
+    'rank grid delta';
+  column-gap: 12px;
+  row-gap: 2px;
+  align-items: center;
+  padding: 10px 4px;
+  border-top: 1px solid var(--grid);
+}
+
+.day-list li:first-child {
+  border-top: 0;
+}
+
+.day-list .rank {
+  grid-area: rank;
+  font-size: 20px;
+  text-align: center;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.day-list .name {
+  grid-area: name;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-list .grid {
+  grid-area: grid;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-list .score {
+  grid-area: score;
+  font-size: 22px;
+  font-weight: 650;
+  text-align: right;
+}
+
+.day-list .delta {
+  grid-area: delta;
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.delta.up {
+  color: var(--good);
+}
+
+.delta.down {
+  color: var(--bad);
+}
+
+#day-missing,
+.scoring {
+  margin: 8px 0 0;
+}
+
+#day-missing:empty {
+  display: none;
+}
+
+.scoring {
+  padding-top: 10px;
+  border-top: 1px solid var(--grid);
+}
+
+.emoji-grid {
+  letter-spacing: 1px;
+}
+
+/* Songless: una casella per genere con il tentativo in cui è stata trovata la canzone
+   (scala di verdi: più chiaro = trovata prima). Magnitudle: una casella per manche,
+   riempita in proporzione ai punti. */
+.mini {
+  display: inline-flex;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+.mini .cell {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  border-radius: 5px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sg .t1 {
+  background: #4ade80;
+  color: #052e16;
+}
+
+.sg .t2 {
+  background: #22c55e;
+  color: #052e16;
+}
+
+.sg .t3 {
+  background: #16a34a;
+  color: #052e16;
+}
+
+.sg .t4 {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.sg .t5 {
+  background: #166534;
+  color: #ffffff;
+}
+
+.sg .miss {
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-weight: 400;
+}
+
+.mg .cell {
+  min-width: 30px;
+  color: #ffffff;
+  background: color-mix(in oklab, var(--bar) var(--fill), var(--surface-2));
+}
+
+/* ---------- filtri ---------- */
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0 8px;
+  flex-wrap: wrap;
+}
+
+.seg {
+  display: inline-flex;
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.seg button {
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  padding: 5px 14px;
+  cursor: pointer;
+  color: var(--text-2);
+}
+
+.seg.small button {
+  padding: 3px 10px;
+  font-size: 13px;
+}
+
+.seg button[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+/* ---------- riquadri ---------- */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.tile .label {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.tile .value {
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.tile .hint {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.small-tiles {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.small-tiles .tile {
+  padding: 10px 12px;
+  background: var(--page);
+}
+
+.small-tiles .value {
+  font-size: 20px;
+}
+
+@media (max-width: 720px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* su due colonne, un riquadro rimasto da solo occupa tutta la riga */
+  .small-tiles .tile:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- tabelle ---------- */
+
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.lb th,
+.lb td {
+  padding: 8px 10px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--grid);
+}
+
+.lb th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  border-top: 0;
+}
+
+.lb th button {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-weight: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.lb th[aria-sort] button {
+  color: var(--text);
+}
+
+.lb th[aria-sort='descending'] button::after {
+  content: ' ↓';
+}
+
+.lb th[aria-sort='ascending'] button::after {
+  content: ' ↑';
+}
+
+.lb .left {
+  text-align: left;
+}
+
+.lb .pos {
+  color: var(--muted);
+  width: 1%;
+}
+
+.lb tr.unqualified td {
+  color: var(--muted);
+}
+
+/* storico di Krillion: da qui in giù le partite del vecchio gruppo */
+.lb tr.sep td {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  padding-top: 16px;
+  border-top: 1px dashed var(--axis);
+}
+
+.player-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  max-width: 100%;
+}
+
+.player-btn span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-btn:hover span:last-child {
+  text-decoration: underline;
+}
+
+.key {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-top: 3px solid currentColor;
+  border-radius: 2px;
+  flex: none;
+}
+
+.key.dashed {
+  border-top-style: dashed;
+}
+
+.key.dotted {
+  border-top-style: dotted;
+}
+
+.grid-cell {
+  text-align: left !important;
+}
+
+#lb-note:empty {
+  display: none;
+}
+
+/* Classifica su schermi stretti: ogni giocatore su due righe (nome e media sopra,
+   il resto sotto, allineato alle intestazioni), così non serve scorrere di lato. */
+@media (max-width: 700px) {
+  #leaderboard,
+  #leaderboard thead,
+  #leaderboard tbody {
+    display: block;
+  }
+
+  #leaderboard[hidden] {
+    display: none;
+  }
+
+  #leaderboard tr {
+    display: grid;
+    grid-template-columns: 18px repeat(5, minmax(0, 1fr));
+    grid-template-areas:
+      'pos name name name avg avg'
+      'pos games best wins rank streak';
+    column-gap: 6px;
+    row-gap: 2px;
+    align-items: baseline;
+    padding: 8px 0;
+    border-top: 1px solid var(--grid);
+  }
+
+  #leaderboard thead tr {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  #leaderboard th,
+  #leaderboard td {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  #leaderboard th {
+    font-size: 11px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #leaderboard .pos {
+    grid-area: pos;
+    width: auto;
+    text-align: left;
+  }
+
+  #leaderboard .c-name {
+    grid-area: name;
+  }
+
+  #leaderboard .c-avg {
+    grid-area: avg;
+  }
+
+  #leaderboard .c-games {
+    grid-area: games;
+  }
+
+  #leaderboard .c-best {
+    grid-area: best;
+  }
+
+  #leaderboard .c-wins {
+    grid-area: wins;
+  }
+
+  #leaderboard .c-rank {
+    grid-area: rank;
+  }
+
+  #leaderboard .c-streak {
+    grid-area: streak;
+  }
+
+  #leaderboard td.c-avg {
+    font-size: 17px;
+    font-weight: 650;
+  }
+
+  #leaderboard td:not(.pos, .c-name, .c-avg) {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  #leaderboard tr.unqualified td {
+    color: var(--muted);
+  }
+}
+
+/* ---------- chips ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-2);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.chip.static {
+  cursor: default;
+  border-color: transparent;
+  background: none;
+}
+
+#pd-legend {
+  margin-top: 8px;
+}
+
+.chip[aria-pressed='false'] .key {
+  opacity: 0.35;
+}
+
+/* ---------- grafici ---------- */
+
+.chart {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart text {
+  fill: var(--muted);
+  font-size: 11px;
+  font-family: var(--font);
+}
+
+.chart .end-label {
+  fill: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chart .gridline {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.chart .baseline {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+
+.chart .series {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart .series.ref {
+  stroke: var(--ref);
+  stroke-width: 1.5;
+}
+
+.chart .dot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.chart .crosshair {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+
+.chart .hit {
+  fill: transparent;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
+.chart .empty {
+  color: var(--muted);
+  padding: 40px 0;
+  text-align: center;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  padding: 8px 10px;
+  font-size: 12px;
+  min-width: 140px;
+  max-width: 260px;
+}
+
+.tooltip .tt-title {
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+
+.tooltip .tt-row {
+  display: grid;
+  grid-template-columns: 16px auto 1fr;
+  align-items: center;
+  gap: 6px;
+}
+
+.tooltip .tt-row strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltip .tt-row span:last-child {
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- testa a testa ---------- */
+
+.h2h th,
+.h2h td {
+  padding: 0;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.h2h thead th {
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 0 2px 6px;
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.h2h tbody th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-2);
+  padding-right: 10px;
+  white-space: nowrap;
+}
+
+.h2h td div {
+  margin: 1px;
+  min-width: 52px;
+  height: 36px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+}
+
+.h2h td div.self {
+  background: transparent;
+  color: var(--muted);
+}
+
+.h2h td div:not(.self):hover {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+.h2h-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.h2h-legend .ramp {
+  width: 140px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--div-neg), var(--div-mid), var(--div-pos));
+}
+
+/* Testa a testa su schermi stretti: colonne strette e nomi delle colonne in verticale */
+@media (max-width: 700px) {
+  .h2h {
+    table-layout: fixed;
+  }
+
+  .h2h thead th {
+    max-width: none;
+    padding: 0 0 6px;
+    vertical-align: bottom;
+  }
+
+  .h2h thead th:first-child {
+    width: 64px;
+  }
+
+  .h2h thead th span {
+    display: inline-block;
+    max-height: 84px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  .h2h tbody th {
+    padding-right: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .h2h td div {
+    min-width: 0;
+    height: 32px;
+    font-size: 11px;
+    line-height: 1.1;
+    text-align: center;
+  }
+}
+
+/* ---------- scheda giocatore ---------- */
+
+dialog {
+  width: min(760px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  padding: 20px;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.pd-close {
+  float: right;
+  margin: -6px -6px 0 8px;
+}
+
+#pd-title {
+  margin-bottom: 12px;
+}
+
+/* ---------- home ---------- */
+
+.home-hint {
+  margin: 6px 0 0;
+}
+
+.games {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0 8px;
+}
+
+/* ogni riquadro usa il tema del suo gioco */
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 260px;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: radial-gradient(520px 240px at 20% -80px, var(--glow), transparent 72%) no-repeat var(--page);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
+}
+
+.game-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.game-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.gc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gc-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.gc-head h2 {
+  flex: 1;
+  font-size: 22px;
+}
+
+.gc-arrow {
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.gc-puzzle {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.gc-podium {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.gc-podium li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.gc-rank {
+  font-size: 18px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+.gc-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gc-score {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.gc-meta {
+  margin: 0;
+}
+
+.gc-empty {
+  margin: auto 0;
+  text-align: center;
+}
+
+.gc-leader {
+  margin: auto 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  color: var(--text-2);
+}
+
+.gc-leader strong {
+  color: var(--text);
+}
+
+@media (max-width: 860px) {
+  .games {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .game-card {
+    min-height: 0;
+  }
+}
+
+/* ---------- piè di pagina ---------- */
+
+.foot {
+  padding: 16px 16px 40px;
+  text-align: center;
+}
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .tabs {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .tab {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 4px;
+    font-size: 13px;
+  }
+
+  .lang {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  h1 {
+    font-size: 25px;
+  }
+
+  .wrap {
+    padding: 0 12px;
+  }
+
+  .card {
+    padding: 14px 12px;
+  }
+
+  dialog {
+    width: calc(100vw - 16px);
+    max-width: none;
+    max-height: calc(100dvh - 16px);
+    padding: 14px 12px;
+  }
+
+  #pd-history th,
+  #pd-history td {
+    padding: 6px 4px;
+  }
+
+  /* sui telefoni più stretti la griglia va a capo invece di uscire dallo schermo */
+  #pd-history .grid-cell {
+    font-size: 12px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .day-title-wrap h2 {
+    font-size: 19px;
+  }
+
+  .day-list .score {
+    font-size: 19px;
+  }
+
+  .tile .value {
+    font-size: 22px;
+  }
+
+  .small-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mini .cell {
+    min-width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+
+  .mg .cell {
+    min-width: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-card {
+    transition: none;
+  }
+}
