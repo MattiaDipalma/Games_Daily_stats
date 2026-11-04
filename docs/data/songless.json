@@ -1,5 +1,7 @@
 {
   "version": 1,
-  "updatedAt": null,
-  "results": []
+  "updatedAt": "2026-11-04T08:38:09.329Z",
+  "results": [
+    {"puzzle":433,"player":"Fuldup","score":90,"date":"2026-11-04","ts":1793779550,"grid":"⬜🟥⬜🟩⬛ [Top Hits]\n⬜⬜⬜⬜⬜ [Pop]\n⬜⬜⬜⬜⬜ [Rock]\n⬜⬜🟩⬛⬛ [Hip Hop]\n⬜🟥⬜⬜🟥 [EDM]","msgId":"3A7203F96136095BF52F"}
+  ]
 }
