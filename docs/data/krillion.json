@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-04T15:01:07.125Z",
+  "updatedAt": "2026-11-04T19:33:50.055Z",
   "results": [
     {"puzzle":112,"player":"Dominic","score":180,"date":"2026-11-04","ts":1793770800,"grid":"🫧⬛🫧🦑🐟🫧🦑","msgId":"3A636F7162ADDF649CF0"},
     {"puzzle":112,"player":"06","score":220,"date":"2026-11-04","ts":1793774227,"grid":"🐟🦑⬛🐟🦑🐟🫧","msgId":"4ACA7F5422038AF04265"},
@@ -17,6 +17,7 @@
     {"puzzle":112,"player":"Fuldup","score":175,"date":"2026-11-04","ts":1793796583,"grid":"🫧🐟🫧🫧🐟🏮⬛","msgId":"3B31CE553678C4D72F31"},
     {"puzzle":112,"player":"+41∙∙∙∙∙∙∙70","score":230,"date":"2026-11-04","ts":1793796673,"grid":"🦑🫧🐟⬛🦑🦑🫧","msgId":"3EB0DC3421082115ED9B2F"},
     {"puzzle":112,"player":"Malena","score":215,"date":"2026-11-04","ts":1793797889,"grid":"🦑🫧🫧🏮🫧🫧🐟","msgId":"3ADE37A38A80F7001205"},
-    {"puzzle":112,"player":"+49∙∙∙∙∙∙∙∙73","score":245,"date":"2026-11-04","ts":1793804406,"grid":"🐟⬛🐟🐟🫧🏮🦑","msgId":"4A57216272C5556F125D"}
+    {"puzzle":112,"player":"+49∙∙∙∙∙∙∙∙73","score":245,"date":"2026-11-04","ts":1793804406,"grid":"🐟⬛🐟🐟🫧🏮🦑","msgId":"4A57216272C5556F125D"},
+    {"puzzle":112,"player":"Julian","score":310,"date":"2026-11-04","ts":1793819421,"grid":"🐟🦑🦑🦑🦑🐟🫧","msgId":"3AF1A739943F43FA6EBB"}
   ]
 }
