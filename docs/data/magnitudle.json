@@ -1,5 +1,7 @@
 {
   "version": 1,
-  "updatedAt": null,
-  "results": []
+  "updatedAt": "2026-11-04T08:45:17.433Z",
+  "results": [
+    {"puzzle":"2026-11-04","player":"Fuldup","score":200,"date":"2026-11-04","ts":1793780307,"grid":"🟥🟥🟥⬜⬜ 50\n⬜⬜⬜⬜⬜ 0\n🟥🟥🟥🟥🟥 100\n🟥🟥🟥⬜⬜ 50\n⬜⬜⬜⬜⬜ 0","msgId":"3A2681D24B1D4A76A322"}
+  ]
 }
