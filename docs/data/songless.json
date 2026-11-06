@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-06T13:06:04.792Z",
+  "updatedAt": "2026-11-06T18:21:22.949Z",
   "results": [
     {"puzzle":435,"player":"+41∙∙∙∙∙∙∙46","score":60,"date":"2026-11-06","ts":1793948393,"grid":"🟥⬜⬜🟥⬜ [Top Hits]\n🟥⬜⬜🟥⬜ [Pop]\n⬜🟥⬜⬜⬜ [Rock]\n⬜⬜🟩⬛⬛ [Hip Hop]\n⬜⬜⬜⬜⬜ [EDM]","msgId":"3A44767D864D7FF449CA"},
     {"puzzle":435,"player":"Jonas","score":160,"date":"2026-11-06","ts":1793953361,"grid":"⬜🟥🟥🟩⬛ [Top Hits]\n⬜⬜⬜⬜⬜ [Pop]\n🟩⬛⬛⬛⬛ [Rock]\n⬜⬜⬜🟩⬛ [Hip Hop]\n⬜⬜⬜⬜⬜ [EDM]","msgId":"4A40A367840447A37455"},
@@ -9,6 +9,7 @@
     {"puzzle":435,"player":"Fuldup","score":90,"date":"2026-11-06","ts":1793968971,"grid":"🟥🟥🟥🟨🟨 [Top Hits]\n🟥🟥⬜⬜⬜ [Pop]\n⬜🟥🟩⬛⬛ [Rock]\n🟨🟨🟨🟩⬛ [Hip Hop]\n🟥🟥⬜⬜⬜ [EDM]","msgId":"3BA38BBF56B8D36D5D68"},
     {"puzzle":435,"player":"Julian","score":175,"date":"2026-11-06","ts":1793970267,"grid":"⬜⬜🟥🟩⬛ [Top Hits]\n🟥⬜⬜⬜⬜ [Pop]\n⬜🟥⬜🟩⬛ [Rock]\n⬜🟩⬛⬛⬛ [Hip Hop]\n⬜⬜🟥🟩⬛ [EDM]","msgId":"3AFD4EB10550D81F790B"},
     {"puzzle":435,"player":"flo","score":140,"date":"2026-11-06","ts":1793970303,"grid":"⬜🟥⬜🟩⬛ [Top Hits]\n🟨⬜⬜🟨🟨 [Pop]\n🟩⬛⬛⬛⬛ [Rock]\n⬜⬜🟨🟨🟩 [Hip Hop]\n⬜⬜⬜⬜⬜ [EDM]","msgId":"3A927326834104D9EC93"},
+    {"puzzle":435,"player":"06","score":175,"date":"2026-11-06","ts":1793988029,"grid":"⬜⬜⬜⬜🟥 [Top Hits]\n⬜⬜⬜⬜⬜ [Pop]\n⬜🟩⬛⬛⬛ [Rock]\n⬜⬜🟩⬛⬛ [Hip Hop]\n⬜⬜⬜🟩⬛ [EDM]","msgId":"4A2DEE907924FDA2669B"},
     {"puzzle":434,"player":"+41∙∙∙∙∙∙∙77","score":100,"date":"2026-11-05","ts":1793865366,"grid":"🟥⬜⬜⬜🟥 [Top Hits]\n⬜⬜🟥⬜🟥 [Pop]\n⬜🟥⬜⬜⬜ [Rock]\n🟩⬛⬛⬛⬛ [Hip Hop]\n⬜⬜⬜⬜🟥 [EDM]","msgId":"3EB0CEECCCF8FF5D4D5D3A"},
     {"puzzle":434,"player":"Jonas","score":130,"date":"2026-11-05","ts":1793865390,"grid":"⬜⬜⬜⬜⬜ [Top Hits]\n⬜⬜⬜⬜⬜ [Pop]\n⬜⬜⬜🟩⬛ [Rock]\n🟩⬛⬛⬛⬛ [Hip Hop]\n⬜🟥⬜⬜⬜ [EDM]","msgId":"3A11B86239D3CF2052A3"},
     {"puzzle":434,"player":"Nic","score":270,"date":"2026-11-05","ts":1793865674,"grid":"🟩⬛⬛⬛⬛ [Top Hits]\n🟥⬜⬜⬜⬜ [Pop]\n🟥🟩⬛⬛⬛ [Rock]\n🟥🟩⬛⬛⬛ [Hip Hop]\n⬜⬜⬜⬜⬜ [EDM]","msgId":"4A89EE6682B7A25F8B03"},
