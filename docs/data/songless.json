@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-07T13:57:00.612Z",
+  "updatedAt": "2026-11-07T21:17:36.730Z",
   "results": [
     {"puzzle":436,"player":"Jonas","score":340,"date":"2026-11-07","ts":1794039377,"grid":"🟩⬛⬛⬛⬛ [Top Hits]\n⬜⬜⬜🟩⬛ [Pop]\n🟩⬛⬛⬛⬛ [Rock]\n🟩⬛⬛⬛⬛ [Hip Hop]\n⬜⬜⬜⬜🟩 [EDM]","msgId":"4A66B254BDAF40AC80B0"},
     {"puzzle":436,"player":"Dominic","score":120,"date":"2026-11-07","ts":1794040489,"grid":"⬜🟨🟨🟨🟨 [Top Hits]\n⬜⬜⬜⬜🟩 [Pop]\n🟩⬛⬛⬛⬛ [Rock]\n⬜⬜⬜⬜🟩 [Hip Hop]\n⬜⬜⬜⬜🟥 [EDM]","msgId":"3A461BE1FF1111DCC4E6"},
@@ -9,6 +9,8 @@
     {"puzzle":436,"player":"Max","score":230,"date":"2026-11-07","ts":1794043764,"grid":"🟨🟨🟩⬛⬛ [Top Hits]\n🟥⬜🟩⬛⬛ [Pop]\n⬜🟥⬜⬜⬜ [Rock]\n🟩⬛⬛⬛⬛ [Hip Hop]\n🟥⬜⬜⬜🟩 [EDM]","msgId":"4A838DF1581A5638F2D5"},
     {"puzzle":436,"player":"+41∙∙∙∙∙∙∙46","score":135,"date":"2026-11-07","ts":1794053016,"grid":"⬜🟩⬛⬛⬛ [Top Hits]\n⬜⬜⬜⬜🟩 [Pop]\n⬜⬜⬜⬜🟥 [Rock]\n⬜⬜⬜🟩⬛ [Hip Hop]\n⬜⬜⬜⬜🟩 [EDM]","msgId":"3AAE2D396D82C18C614E"},
     {"puzzle":436,"player":"flo","score":165,"date":"2026-11-07","ts":1794056953,"grid":"🟥🟨🟩⬛⬛ [Top Hits]\n🟥⬜⬜⬜🟩 [Pop]\n⬜⬜⬜⬜⬜ [Rock]\n⬜🟩⬛⬛⬛ [Hip Hop]\n⬜⬜⬜⬜🟩 [EDM]","msgId":"3AC8C3B08D49828E0539"},
+    {"puzzle":436,"player":"Julian","score":180,"date":"2026-11-07","ts":1794076763,"grid":"🟥🟨🟨🟨🟨 [Top Hits]\n⬜🟥⬜⬜🟩 [Pop]\n⬜🟩⬛⬛⬛ [Rock]\n⬜🟩⬛⬛⬛ [Hip Hop]\n⬜⬜⬜⬜🟥 [EDM]","msgId":"3A6FA40BFC7620972E5C"},
+    {"puzzle":436,"player":"+41∙∙∙∙∙∙∙23","score":140,"date":"2026-11-07","ts":1794083040,"grid":"🟥⬜⬜⬜⬜ [Top Hits]\n⬜⬜⬜⬜🟩 [Pop]\n⬜🟨🟨🟩⬛ [Rock]\n🟩⬛⬛⬛⬛ [Hip Hop]\n⬜⬜⬜⬜⬜ [EDM]","msgId":"4AA0DEE7DDAD98F7D44E"},
     {"puzzle":435,"player":"+41∙∙∙∙∙∙∙46","score":60,"date":"2026-11-06","ts":1793948393,"grid":"🟥⬜⬜🟥⬜ [Top Hits]\n🟥⬜⬜🟥⬜ [Pop]\n⬜🟥⬜⬜⬜ [Rock]\n⬜⬜🟩⬛⬛ [Hip Hop]\n⬜⬜⬜⬜⬜ [EDM]","msgId":"3A44767D864D7FF449CA"},
     {"puzzle":435,"player":"Jonas","score":160,"date":"2026-11-06","ts":1793953361,"grid":"⬜🟥🟥🟩⬛ [Top Hits]\n⬜⬜⬜⬜⬜ [Pop]\n🟩⬛⬛⬛⬛ [Rock]\n⬜⬜⬜🟩⬛ [Hip Hop]\n⬜⬜⬜⬜⬜ [EDM]","msgId":"4A40A367840447A37455"},
     {"puzzle":435,"player":"+41∙∙∙∙∙∙∙77","score":175,"date":"2026-11-06","ts":1793953642,"grid":"⬜⬜🟥🟥🟥 [Top Hits]\n🟨🟨🟨🟩⬛ [Pop]\n🟥🟩⬛⬛⬛ [Rock]\n🟨🟨🟩⬛⬛ [Hip Hop]\n⬜🟥⬜🟥⬜ [EDM]","msgId":"3EB07297340C18E76EAB04"},
