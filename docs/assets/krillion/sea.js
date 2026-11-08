@@ -3,7 +3,7 @@
 // alla pagina. Le statistiche restano quelle di game.js; qui si aggiungono solo elementi aria-hidden.
 // Con "riduci movimento" attivo nel sistema le animazioni si fermano (vedi sea.css).
 
-import { fmt, ui } from '../core.js?v=2';
+import { fmt, ui } from '../core.js?v=3';
 import { spriteSize, spriteUrl } from './sprites.js?v=2';
 
 const root = document.documentElement;

@@ -45,9 +45,9 @@ movimento". Tutto questo è in [`docs/assets/krillion/`](docs/assets/krillion/) 
 Daily (#79–#111, in [`docs/data/krillion-legacy.json`](docs/data/krillion-legacy.json)) contano lo
 stesso nelle statistiche personali di ogni giocatore: la scheda che si apre cliccando su un nome
 (partite, media, record, vittorie, podi, serie, grafico e storico) le comprende tutte. Si vedono anche
-sfogliando i puzzle passati, ma non entrano nella classifica, nei riquadri, nel grafico dell'andamento e
-nel testa a testa. Per spostare l'inizio della nuova classifica cambia `seasonStart` in
-[`docs/assets/core.js`](docs/assets/core.js).
+sfogliando i puzzle passati, ma non entrano nella classifica (nemmeno in quella generale della home), nei
+riquadri, nel grafico dell'andamento e nel testa a testa. Per spostare l'inizio della nuova classifica
+cambia `seasonStart` in [`docs/assets/core.js`](docs/assets/core.js).
 
 `krillion-legacy.json` è una copia di `docs/data/stats.json` del vecchio sito (aggiornato al 3 novembre
 2026). Il bot non lo tocca: se il vecchio gruppo va avanti e vuoi aggiungere le partite nuove alle
@@ -111,11 +111,15 @@ messaggio.
 
 ## Il sito
 
-Il sito è in [`docs/`](docs/) (HTML/CSS/JS, nessuna dipendenza). La home mostra per ogni gioco il podio
-dell'ultimo puzzle e chi è in testa; ogni pagina di gioco mostra:
+Il sito è in [`docs/`](docs/) (HTML/CSS/JS, nessuna dipendenza). La home ha un riquadro per ogni gioco
+(il podio dell'ultimo puzzle e chi è in testa; un clic apre la pagina del gioco) e sotto la
+**classifica generale**: per ogni gioco la posizione media del giocatore (1 = primo del giorno, come nella
+colonna "Pos. media" della classifica del gioco) e, per ordinare, la media dei tre giochi, così ogni
+gioco conta allo stesso modo. Ci entra solo chi è nella classifica di tutti e tre i giochi.
+
+Ogni pagina di gioco mostra:
 
 - la classifica (media, partite, record, vittorie, posizione media, serie di giorni consecutivi); ci entra solo chi ha giocato almeno 4 volte negli ultimi 7 giorni, in tutti e tre i giochi (chi non ha i requisiti resta raggiungibile dalla sua scheda);
-- la classifica (media, partite, record, vittorie, posizione media, serie di giorni consecutivi);
 - il grafico dell'andamento (punteggio o media mobile su 7 partite);
 - il testa a testa tra ogni coppia di giocatori;
 - la scheda di ogni giocatore (clic sul nome);
@@ -312,7 +316,7 @@ docs/                    il sito (GitHub Pages)
   krillion/ songless/ magnitudle/   le pagine dei giochi
   assets/core.js         dati, calcoli, grafici e testi comuni (anche seasonStart di Krillion)
   assets/game.js         pagina di un gioco
-  assets/home.js         home
+  assets/home.js         home: i riquadri dei giochi e la classifica generale
   assets/style.css       stile e colori dei tre giochi
   assets/krillion/       il fondale marino della pagina di Krillion:
     sea.css                colori, caratteri pixel, cielo, acqua e fondale

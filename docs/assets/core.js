@@ -67,8 +67,6 @@ const I18N = {
     colAvgRank: 'Pos. media',
     colStreak: 'Serie',
     qualifyNote: 'In classifica solo chi ha giocato almeno {n} volte negli ultimi {days} giorni.',
-    seasonNote:
-      'La classifica è ripartita da zero con il Krillion #{start}. Le partite di Krillion Daily (#{from}–#{to}) contano nelle statistiche personali: clicca su un nome.',
     seasonEmpty:
       'La classifica riparte da zero: appena qualcuno manda il Krillion #{start} (o uno successivo) nel gruppo, comparirà qui.',
     lbNone:
@@ -122,6 +120,13 @@ const I18N = {
     homeSeasonEmpty: 'Classifica ripartita da zero',
     homePlayers: '{n} giocatori',
     homeOpen: 'Apri le statistiche',
+    overall: 'Classifica generale',
+    overallHint:
+      'Posizione media in ogni gioco (1 = primo del giorno). In classifica conta la media dei tre giochi: più è bassa, meglio è.',
+    overallNote:
+      'In classifica solo chi è nella classifica di tutti e tre i giochi (almeno {n} partite negli ultimi {days} giorni in ognuno).',
+    overallEmpty: 'Ancora nessuno è nella classifica di tutti e tre i giochi.',
+    overallTip: '{game}: {n} partite',
   },
   de: {
     subtitle: 'Die Statistiken der Gruppe',
@@ -158,8 +163,6 @@ const I18N = {
     colAvgRank: 'Ø Rang',
     colStreak: 'Serie',
     qualifyNote: 'In der Rangliste nur, wer in den letzten {days} Tagen mindestens {n} Mal gespielt hat.',
-    seasonNote:
-      'Die Rangliste hat mit Krillion #{start} bei null neu begonnen. Die Spiele von Krillion Daily (#{from}–#{to}) zählen in den persönlichen Statistiken: Klick auf einen Namen.',
     seasonEmpty:
       'Die Rangliste beginnt bei null: Sobald jemand Krillion #{start} (oder ein späteres) in die Gruppe schickt, erscheint es hier.',
     lbNone:
@@ -213,6 +216,13 @@ const I18N = {
     homeSeasonEmpty: 'Rangliste neu gestartet',
     homePlayers: '{n} Spieler',
     homeOpen: 'Statistiken öffnen',
+    overall: 'Gesamtrangliste',
+    overallHint:
+      'Durchschnittlicher Rang in jedem Spiel (1 = Tagessieger). In der Rangliste zählt der Durchschnitt der drei Spiele: je tiefer, desto besser.',
+    overallNote:
+      'In der Rangliste nur, wer in der Rangliste aller drei Spiele ist (mindestens {n} Spiele in den letzten {days} Tagen in jedem).',
+    overallEmpty: 'Noch niemand ist in der Rangliste aller drei Spiele.',
+    overallTip: '{game}: {n} Spiele',
   },
   en: {
     subtitle: 'The group stats',
@@ -249,8 +259,6 @@ const I18N = {
     colAvgRank: 'Avg. rank',
     colStreak: 'Streak',
     qualifyNote: 'Only players with at least {n} games in the last {days} days appear in the leaderboard.',
-    seasonNote:
-      'The leaderboard restarted from zero with Krillion #{start}. Games from Krillion Daily (#{from}–#{to}) count in the personal stats: tap a name.',
     seasonEmpty:
       'The leaderboard restarts from zero: as soon as someone posts Krillion #{start} (or a later one) in the group, it will show up here.',
     lbNone:
@@ -303,6 +311,13 @@ const I18N = {
     homeSeasonEmpty: 'Leaderboard restarted from zero',
     homePlayers: '{n} players',
     homeOpen: 'Open the stats',
+    overall: 'Overall leaderboard',
+    overallHint:
+      'Average position in each game (1 = first of the day). The leaderboard uses the average of the three games: lower is better.',
+    overallNote:
+      'Only players on the leaderboard of all three games (at least {n} games in the last {days} days in each).',
+    overallEmpty: 'Nobody is on the leaderboard of all three games yet.',
+    overallTip: '{game}: {n} games',
   },
 };
 
@@ -418,13 +433,14 @@ export function applyStaticTexts(root = document) {
 }
 
 /**
- * Intestazione (con i link ai tre giochi), contenuto e piè di pagina.
+ * Intestazione, contenuto e piè di pagina. Le linguette dei tre giochi ci sono solo nelle pagine dei
+ * giochi: nella home portano ai giochi i riquadri.
  * @param {{ page: string, base: string, onLang: () => void }} opts
  *   page: 'home' oppure l'id del gioco; base: percorso della radice del sito ('' o '../')
  */
 export function mountShell({ page, base, onLang }) {
   const game = GAMES[page];
-  const tabs = GAME_IDS.map((id) =>
+  const tabs = (game ? GAME_IDS : []).map((id) =>
     el(
       'a',
       {
@@ -463,7 +479,7 @@ export function mountShell({ page, base, onLang }) {
         el('span', { 'aria-hidden': 'true' }, '🎮'),
         ' Games Daily',
       ),
-      el('div', { class: 'tabs' }, tabs),
+      tabs.length ? el('div', { class: 'tabs' }, tabs) : null,
       el('label', { class: 'lang' }, lang),
     ),
     el(
@@ -695,7 +711,6 @@ export async function loadGame(id, { base = '', names = new Map(), demo = false 
     separate ? current.filter((r) => puzzleX(def, r.puzzle) >= seasonStart) : [...legacy, ...current],
     { def, names, colors: career.colors, hide: true },
   );
-  const legacyPuzzles = legacy.map((r) => r.puzzle).filter(Number.isFinite);
   return {
     def,
     career,
@@ -703,9 +718,6 @@ export async function loadGame(id, { base = '', names = new Map(), demo = false 
     hidden: names.hidden ?? new Set(),
     updatedAt,
     seasonStart: separate ? seasonStart : null,
-    legacyRange: legacyPuzzles.length
-      ? { from: Math.min(...legacyPuzzles), to: Math.max(...legacyPuzzles) }
-      : null,
   };
 }
 
@@ -805,6 +817,44 @@ export function leaderboardStats(model, range) {
     }).length;
     return recent >= MIN_RECENT;
   });
+}
+
+/**
+ * Classifica generale (home): chi è nella classifica di ogni gioco, per posizione media.
+ * Per ogni gioco vale la posizione media della sua classifica (periodo "sempre"); quella generale
+ * è la media dei valori dei giochi, così ogni gioco conta allo stesso modo.
+ * @param {Record<string, object>} seasons id del gioco → modello della classifica (loadGame().season)
+ * @returns {Array<{ name: string, avgRank: number, games: number, byGame: Record<string, object> }>}
+ */
+export function overallStats(seasons) {
+  const ids = Object.keys(seasons);
+  const people = new Map(); // nome in minuscolo → { name, byGame }
+  for (const id of ids) {
+    const model = seasons[id];
+    for (const s of leaderboardStats(model, periodRange(model, 'all'))) {
+      const key = s.name.toLowerCase();
+      const p = people.get(key) ?? { name: s.name, byGame: {} };
+      // stesso nome scritto in modi diversi nei giochi: si mostra quello con l'iniziale maiuscola
+      if (p.name[0] === p.name[0].toLowerCase()) p.name = s.name;
+      p.byGame[id] = s;
+      people.set(key, p);
+    }
+  }
+  // chi è in tutte le classifiche, per posizione media; a pari media (a meno degli arrotondamenti)
+  // prima chi ha più partite
+  return [...people.values()]
+    .filter((p) => ids.every((id) => p.byGame[id]))
+    .map((p) => ({
+      ...p,
+      avgRank: ids.reduce((sum, id) => sum + p.byGame[id].avgRank, 0) / ids.length,
+      games: ids.reduce((sum, id) => sum + p.byGame[id].games, 0),
+    }))
+    .sort(
+      (a, b) =>
+        (Math.abs(a.avgRank - b.avgRank) > 1e-9 ? a.avgRank - b.avgRank : 0) ||
+        b.games - a.games ||
+        a.name.localeCompare(b.name, locale()),
+    );
 }
 
 export function sortStats(stats, sort) {
