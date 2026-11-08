@@ -242,6 +242,11 @@ h3 {
   font-weight: 600;
 }
 
+/* la lingua sempre a destra, anche nella home (dove non ci sono le linguette) */
+.lang {
+  margin-left: auto;
+}
+
 select,
 button {
   font: inherit;
@@ -334,11 +339,6 @@ select {
   cursor: default;
 }
 
-.note {
-  margin: -4px 0 10px;
-}
-
-.note:empty,
 .empty-note:empty,
 .others:empty,
 .scoring:empty {
@@ -1250,6 +1250,147 @@ dialog::backdrop {
   color: var(--text);
 }
 
+/* classifica generale: posizione media in ogni gioco e, in grassetto, la media dei tre */
+.overall {
+  margin-top: 22px;
+}
+
+.overall > h2 {
+  margin-bottom: 4px;
+}
+
+.overall-hint {
+  margin: 0 0 10px;
+}
+
+#overall .pos {
+  text-align: center;
+}
+
+#overall .c-name {
+  font-weight: 600;
+}
+
+#overall td.c-avg {
+  font-weight: 650;
+}
+
+#overall td.c-game,
+#overall td.c-games {
+  color: var(--text-2);
+}
+
+/* le colonne dei giochi prendono il colore del loro gioco (data-game) */
+#overall th.c-game {
+  color: var(--accent);
+}
+
+#overall-note {
+  margin: 10px 0 0;
+}
+
+#overall-note:empty {
+  display: none;
+}
+
+/* Su schermi stretti ogni giocatore va su due righe: nome e media generale sopra,
+   i tre giochi e le partite sotto, allineati alle intestazioni. */
+@media (max-width: 700px) {
+  #overall,
+  #overall thead,
+  #overall tbody {
+    display: block;
+  }
+
+  #overall tr {
+    display: grid;
+    grid-template-columns: 24px repeat(4, minmax(0, 1fr));
+    grid-template-areas:
+      'pos name name name avg'
+      'pos krillion songless magnitudle games';
+    column-gap: 6px;
+    row-gap: 2px;
+    align-items: baseline;
+    padding: 8px 0;
+    border-top: 1px solid var(--grid);
+  }
+
+  #overall thead tr {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  #overall th,
+  #overall td {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  #overall th {
+    font-size: 11px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #overall .pos {
+    grid-area: pos;
+    width: auto;
+    text-align: left;
+  }
+
+  #overall .c-name {
+    grid-area: name;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #overall .c-avg {
+    grid-area: avg;
+  }
+
+  #overall .c-krillion {
+    grid-area: krillion;
+  }
+
+  #overall .c-songless {
+    grid-area: songless;
+  }
+
+  #overall .c-magnitudle {
+    grid-area: magnitudle;
+  }
+
+  #overall .c-games {
+    grid-area: games;
+  }
+
+  #overall td.c-avg {
+    font-size: 17px;
+  }
+
+  #overall td.c-game,
+  #overall td.c-games {
+    font-size: 13px;
+  }
+}
+
+/* sui telefoni le colonne dei giochi mostrano solo l'emoji (il nome resta per i lettori di schermo) */
+@media (max-width: 520px) {
+  #overall th.c-game {
+    font-size: 15px;
+  }
+
+  #overall .g-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 860px) {
   .games {
     grid-template-columns: minmax(0, 1fr);
@@ -1288,10 +1429,6 @@ dialog::backdrop {
     justify-content: center;
     padding: 6px 4px;
     font-size: 13px;
-  }
-
-  .lang {
-    margin-left: auto;
   }
 }
 

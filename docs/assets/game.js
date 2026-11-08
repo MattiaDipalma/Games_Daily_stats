@@ -33,7 +33,7 @@ import {
   showTooltip,
   sortStats,
   t,
-} from './core.js?v=2';
+} from './core.js?v=3';
 
 const id = document.documentElement.dataset.game;
 const def = GAMES[id];
@@ -48,7 +48,7 @@ const state = {
   status: null,
 };
 
-/** { career, season, updatedAt, seasonStart, legacyRange } – vedi loadGame() */
+/** { career, season, updatedAt, seasonStart } – vedi loadGame() */
 let game = null;
 
 const shell = mountShell({ page: id, base: '../', onLang: renderAll });
@@ -83,7 +83,6 @@ shell.main.innerHTML = `
 
     <section class="card" aria-labelledby="lb-title">
       <h2 id="lb-title" data-i18n="leaderboard"></h2>
-      <p id="season-note" class="muted small note"></p>
       <div class="table-wrap">
         <table class="lb" id="leaderboard"></table>
       </div>
@@ -298,13 +297,6 @@ function renderLeaderboard(range) {
   const model = game.season;
   const stats = sortStats(leaderboardStats(model, range), state.sort);
   const table = $('#leaderboard');
-
-  // Krillion: la classifica è ripartita da zero, le partite vecchie contano solo nelle schede
-  const note = $('#season-note');
-  note.textContent =
-    game.seasonStart && game.legacyRange
-      ? t('seasonNote', { start: game.seasonStart, from: game.legacyRange.from, to: game.legacyRange.to })
-      : '';
 
   $('#lb-empty').textContent = stats.length
     ? ''
