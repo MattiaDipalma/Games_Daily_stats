@@ -1,7 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-11T16:05:15.385Z",
+  "updatedAt": "2026-11-12T06:03:47.985Z",
   "results": [
+    {"puzzle":120,"player":"Dominic","score":270,"date":"2026-11-12","ts":1794461823,"grid":"⬛🦑🐟🦑🐟🐟🦑","msgId":"3A235937DF48FBE5589F"},
     {"puzzle":119,"player":"Dominic","score":240,"date":"2026-11-11","ts":1794375376,"grid":"🐟🦑🐟⬛🦑🐟🐟","msgId":"3A76114162E188888084"},
     {"puzzle":119,"player":"+41∙∙∙∙∙∙∙77","score":170,"date":"2026-11-11","ts":1794377784,"grid":"🦑🦑🫧⬛⬛🐟🫧","msgId":"3A5B9CC6A67ACD21B07E"},
     {"puzzle":119,"player":"Jonas","score":215,"date":"2026-11-11","ts":1794379087,"grid":"🏮⬛🦑🫧🦑⬛⬛","msgId":"4A48126763E521869067"},
