@@ -13,6 +13,7 @@ import {
   fmtLongDate,
   fmtUpdated,
   genreStats,
+  gridLegend,
   gridNode,
   hideTooltip,
   inRange,
@@ -32,8 +33,9 @@ import {
   rolling,
   showTooltip,
   sortStats,
+  svg,
   t,
-} from './core.js?v=3';
+} from './core.js?v=4';
 
 const id = document.documentElement.dataset.game;
 const def = GAMES[id];
@@ -65,6 +67,8 @@ shell.main.innerHTML = `
         </div>
         <button class="icon-btn" id="day-next" type="button" data-i18n-label="next">›</button>
       </div>
+      <div id="day-scale" class="day-scale" hidden></div>
+      <div id="day-legend" class="day-legend" aria-hidden="true" hidden></div>
       <ol id="day-list" class="day-list"></ol>
       <p id="day-missing" class="muted small"></p>
       <p id="scoring" class="muted small scoring"></p>
@@ -95,7 +99,7 @@ shell.main.innerHTML = `
       <h2 id="genres-title" data-i18n="genres"></h2>
       <p class="muted small" data-i18n="genresHint"></p>
       <div class="table-wrap">
-        <table class="lb" id="genres"></table>
+        <table class="lb genres" id="genres"></table>
       </div>
     </section>
 
@@ -140,7 +144,7 @@ document.body.append(
       'div',
       { id: 'pd-genres-wrap', hidden: true },
       el('h3', { 'data-i18n': 'genres' }),
-      el('div', { class: 'table-wrap' }, el('table', { class: 'lb', id: 'pd-genres' })),
+      el('div', { class: 'table-wrap' }, el('table', { class: 'lb genres', id: 'pd-genres' })),
     ),
     el('div', { class: 'chips', id: 'pd-legend' }),
     el('div', { class: 'chart', id: 'pd-chart' }),
@@ -202,10 +206,27 @@ function renderDay() {
   $('#day-date').textContent = fmtLongDate(p.date);
   $('#day-prev').disabled = idx <= 0;
   $('#day-next').disabled = idx >= list.length - 1;
+  // a che punto dello storico siamo (0–1): i temi ne fanno una barra di avanzamento
+  $('#day-title')
+    .closest('.day')
+    .style.setProperty('--day-pos', list.length > 1 ? (idx / (list.length - 1)).toFixed(4) : '1');
+  renderScale(p);
+
+  // intestazione delle caselle (i generi di Songless, le manche di Magnitudle)
+  const legend = gridLegend(id, p.results);
+  $('#day-legend').hidden = !legend.length;
+  $('#day-legend').replaceChildren(
+    el(
+      'span',
+      { class: `mini lg ${id === 'songless' ? 'sg' : 'mg'}` },
+      legend.map((l) => el('span', { class: 'cell', title: l.full }, l.short)),
+    ),
+  );
 
   $('#day-list').replaceChildren(
     ...p.results.map((r) => {
       const rank = p.rank.get(r.player);
+      const medal = rank <= 3 && p.results.length > 1;
       const history = model.byPlayer.get(r.player).filter((x) => x.puzzle !== r.puzzle);
       let delta;
       if (history.length) {
@@ -219,11 +240,11 @@ function renderDay() {
       }
       return el(
         'li',
-        {},
+        { class: rank === 1 && p.results.length > 1 ? 'first' : null },
         el(
           'span',
-          { class: 'rank', 'aria-label': `#${rank}` },
-          rank <= 3 && p.results.length > 1 ? MEDALS[rank - 1] : rank,
+          { class: `rank${medal ? ' medal' : ''}`, 'aria-label': `#${rank}` },
+          medal ? MEDALS[rank - 1] : rank,
         ),
         el('span', { class: 'name' }, playerButton(r.player, false)),
         el(
@@ -252,6 +273,93 @@ function renderDay() {
     ? t(missing.length === 1 ? 'missing' : 'missingMany', { names: missing.join(', ') })
     : '';
   $('#scoring').textContent = id === 'krillion' ? '' : t(`scoring_${id}`);
+}
+
+/**
+ * Il righello del giorno (Magnitudle): un punto per giocatore sulla scala da 0 al massimo, con la
+ * media del giorno. I punti vicini si impilano; il nome e i punti sono nel tooltip (e nella lista sotto).
+ */
+function renderScale(p) {
+  const box = $('#day-scale');
+  const max = def.max;
+  box.hidden = !def.scale || !max;
+  if (box.hidden) return;
+  box.setAttribute('role', 'group');
+  box.setAttribute('aria-label', t('scaleLabel', { max: fmt(max) }));
+
+  const model = game.career;
+  const title = `${def.name} · ${fmtLongDate(p.date)}`;
+  const width = box.clientWidth || 600;
+  const size = 12; // diametro di un punto, compreso lo spazio attorno
+  const share = (v) => Math.max(0, Math.min(1, v / max));
+  const rows = []; // per ogni fila, le x già occupate
+  const dots = [...p.results]
+    .sort((a, b) => a.score - b.score)
+    .map((r) => {
+      const x = share(r.score) * width;
+      let row = rows.findIndex((xs) => xs.every((other) => Math.abs(other - x) >= size));
+      if (row === -1) row = rows.push([]) - 1;
+      rows[row].push(x);
+      const c = colorOf(model, r.player);
+      const show = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        showTooltip(
+          title,
+          [{ color: c.color, cls: c.cls, value: fmt(r.score), label: r.player }],
+          e.clientX ?? rect.right,
+          e.clientY ?? rect.top,
+        );
+      };
+      return el('span', {
+        class: 'ds-dot',
+        role: 'img',
+        tabindex: 0,
+        'aria-label': `${r.player}: ${fmt(r.score)}`,
+        style: `left:${(share(r.score) * 100).toFixed(2)}%;bottom:${row * size}px;color:${c.color}`,
+        onpointermove: show,
+        onpointerleave: hideTooltip,
+        onfocus: show,
+        onblur: hideTooltip,
+      });
+    });
+
+  // scala: un trattino ogni 10 punti, più lungo ogni 50 e ogni 100 (con il numero)
+  const ticks = [];
+  const numbers = [];
+  for (let v = 0; v <= max; v += 10) {
+    const x = Math.min(width - 1, Math.round(share(v) * width)) + 0.5;
+    ticks.push(svg('line', { x1: x, x2: x, y1: 0, y2: v % 100 === 0 ? 13 : v % 50 === 0 ? 9 : 5 }));
+    if (v % 100 === 0) numbers.push(el('span', { style: `left:${(v / max) * 100}%` }, fmt(v)));
+  }
+  box.replaceChildren(
+    el(
+      'div',
+      { class: 'ds-plot', style: `height:${Math.max(2, rows.length) * size + 22}px` },
+      p.results.length > 1
+        ? el(
+            'span',
+            // l'etichetta resta dentro il righello anche quando la media è vicina a un bordo
+            {
+              class: `ds-avg${share(p.avg) > 0.8 ? ' flip' : ''}`,
+              style: `left:${(share(p.avg) * 100).toFixed(2)}%`,
+            },
+            el('b', {}, t('scaleAvg', { n: fmt(p.avg) })),
+          )
+        : null,
+      dots,
+    ),
+    el(
+      'div',
+      { class: 'ds-axis', 'aria-hidden': 'true' },
+      svg(
+        'svg',
+        { width, height: 14, viewBox: `0 0 ${width} 14` },
+        svg('line', { x1: 0, x2: width, y1: 0.5, y2: 0.5 }),
+        ticks,
+      ),
+      numbers,
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -340,7 +448,17 @@ function renderLeaderboard(range) {
     const cells = {
       name: playerButton(s.name),
       games: fmt(s.games),
-      avg: fmt(s.avg, 1),
+      // la media anche come barra, rispetto al punteggio massimo del gioco (la disegnano i temi)
+      avg: [
+        def.max
+          ? el(
+              'span',
+              { class: 'meter', 'aria-hidden': 'true' },
+              el('i', { style: `width:${Math.max(0, Math.min(100, (100 * s.avg) / def.max)).toFixed(1)}%` }),
+            )
+          : null,
+        el('span', { class: 'avg-num' }, fmt(s.avg, 1)),
+      ],
       best: fmt(s.best.score),
       wins: fmt(s.wins),
       avgRank: fmt(s.avgRank, 2),
@@ -392,15 +510,32 @@ function genreTable(rows, { withTop = false } = {}) {
     el('th', { scope: 'col' }, t('colAvgTry')),
     withTop ? el('th', { class: 'left', scope: 'col' }, t('colTop')) : null,
   );
+  // data-label: su schermi stretti l'intestazione sparisce e ogni valore porta la sua etichetta
   const body = rows.map((g) =>
     el(
       'tr',
       {},
-      el('td', { class: 'left' }, g.genre),
-      el('td', {}, `${fmt(g.hits)}/${fmt(g.plays)} · ${fmt((100 * g.hits) / g.plays)}%`),
-      el('td', {}, fmt(g.points / g.plays, 1)),
-      el('td', {}, g.hits ? fmt(g.tries / g.hits, 1) : '–'),
-      withTop ? el('td', { class: 'left' }, g.top ? `${g.top.name} · ${fmt(g.top.avg, 1)}` : '–') : null,
+      el('td', { class: 'left c-genre' }, g.genre),
+      el(
+        'td',
+        { class: 'c-hits' },
+        el(
+          'span',
+          { class: 'hits-bar', 'aria-hidden': 'true' },
+          el('i', { style: `width:${((100 * g.hits) / g.plays).toFixed(1)}%` }),
+        ),
+        el('span', { class: 'hits-pct' }, `${fmt((100 * g.hits) / g.plays)}%`),
+        el('span', { class: 'hits-n' }, `${fmt(g.hits)}/${fmt(g.plays)}`),
+      ),
+      el('td', { class: 'c-pts', 'data-label': t('colAvgPoints') }, fmt(g.points / g.plays, 1)),
+      el('td', { class: 'c-try', 'data-label': t('colAvgTry') }, g.hits ? fmt(g.tries / g.hits, 1) : '–'),
+      withTop
+        ? el(
+            'td',
+            { class: 'left c-top', 'data-label': t('colTop') },
+            g.top ? `${g.top.name} · ${fmt(g.top.avg, 1)}` : '–',
+          )
+        : null,
     ),
   );
   return [el('thead', {}, head), el('tbody', {}, body)];
@@ -548,6 +683,10 @@ function renderH2H(range) {
     }
   }
 
+  // Da che intensità (0–80) il colore di una casella è abbastanza chiaro da volere il testo scuro:
+  // lo dice il tema con --h2h-flip (senza, il testo resta sempre chiaro).
+  const flip = Number(getComputedStyle(document.documentElement).getPropertyValue('--h2h-flip')) || Infinity;
+
   const head = el(
     'tr',
     {},
@@ -580,6 +719,8 @@ function renderH2H(range) {
           el(
             'div',
             {
+              // win/lose = vince/perde più spesso, hi = casella chiara: il tema ci mette il testo scuro
+              class: `${share >= 0.5 ? 'win' : 'lose'}${strength >= flip ? ' hi' : ''}`,
               tabindex: 0,
               'aria-label': tip,
               style: `background:color-mix(in oklab, ${hue} ${strength}%, var(--div-mid))`,
@@ -787,6 +928,7 @@ function bindControls() {
     timer = setTimeout(() => {
       if (!game || window.innerWidth === lastWidth) return;
       lastWidth = window.innerWidth;
+      if (def.scale) renderDay();
       renderTrend(periodRange(game.season, state.period));
     }, 150);
   });

@@ -1,8 +1,18 @@
-Fonts used by the Krillion page (docs/assets/krillion/sea.css), from Google Fonts via Fontsource:
+Fonts used by the game pages, from Google Fonts via Fontsource.
+
+Krillion (docs/assets/krillion/sea.css):
 
 - Silkscreen: Copyright 2001 The Silkscreen Project Authors (https://github.com/googlefonts/silkscreen)
 - Jersey 10: Copyright 2023 The Soft Type Project Authors (https://github.com/scfried/soft-type-jersey)
 - Space Mono: Copyright 2016 The Space Mono Project Authors (https://github.com/googlefonts/spacemono)
+
+Songless (docs/assets/songless/stage.css):
+
+- Unbounded: Copyright 2022 The Unbounded Project Authors (https://github.com/googlefonts/unbounded)
+
+Magnitudle (docs/assets/magnitudle/ruler.css):
+
+- Barlow Condensed: Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

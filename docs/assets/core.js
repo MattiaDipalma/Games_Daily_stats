@@ -1,20 +1,23 @@
 // Games Daily – codice comune a tutte le pagine del sito (home e pagine dei giochi).
 // Legge i file in data/ (aggiornati dal bot WhatsApp) e calcola tutto lato client.
 
+// max: il punteggio massimo di un puzzle (per le barre della media e il righello di Magnitudle).
 export const GAMES = {
   krillion: {
     id: 'krillion',
     name: 'Krillion',
     emoji: '🦐',
     numbered: true,
+    max: 700,
     // Le partite del vecchio gruppo Krillion Daily contano nelle statistiche personali,
     // ma la classifica riparte da zero da questo puzzle.
     legacyFile: 'krillion-legacy.json',
     seasonStart: 112,
   },
-  songless: { id: 'songless', name: 'Songless', emoji: '🎵', numbered: true },
+  songless: { id: 'songless', name: 'Songless', emoji: '🎵', numbered: true, max: 500 },
   // Magnitudle non ha un numero: il puzzle è la data scritta nel messaggio.
-  magnitudle: { id: 'magnitudle', name: 'Magnitudle', emoji: '📏', numbered: false },
+  // scale: sotto il titolo del giorno c'è il righello con i punteggi di tutti.
+  magnitudle: { id: 'magnitudle', name: 'Magnitudle', emoji: '📏', numbered: false, max: 500, scale: true },
 };
 export const GAME_IDS = Object.keys(GAMES);
 
@@ -113,6 +116,9 @@ const I18N = {
     songlessHit: '{genre}: trovata al {n}° tentativo, {p} punti',
     songlessMiss: '{genre}: non trovata, 0 punti',
     magnitudleRound: 'Manche {n}: {p} punti',
+    roundName: 'Manche {n}',
+    scaleLabel: 'I punteggi del giorno sul righello, da 0 a {max}',
+    scaleAvg: 'media {n}',
     krillionAnswer: 'Risposta {n}: {p} punti',
     homeHint: 'Scegli un gioco: classifica, andamento, testa a testa e la scheda di ogni giocatore.',
     homeNoData: 'Ancora nessun risultato.',
@@ -209,6 +215,9 @@ const I18N = {
     songlessHit: '{genre}: beim {n}. Versuch gefunden, {p} Punkte',
     songlessMiss: '{genre}: nicht gefunden, 0 Punkte',
     magnitudleRound: 'Runde {n}: {p} Punkte',
+    roundName: 'Runde {n}',
+    scaleLabel: 'Die Punktzahlen des Tages auf dem Massstab, von 0 bis {max}',
+    scaleAvg: 'Schnitt {n}',
     krillionAnswer: 'Antwort {n}: {p} Punkte',
     homeHint: 'Wähle ein Spiel: Rangliste, Verlauf, Direktvergleich und die Statistiken jedes Spielers.',
     homeNoData: 'Noch keine Resultate.',
@@ -304,6 +313,9 @@ const I18N = {
     songlessHit: '{genre}: found on attempt {n}, {p} points',
     songlessMiss: '{genre}: not found, 0 points',
     magnitudleRound: 'Round {n}: {p} points',
+    roundName: 'Round {n}',
+    scaleLabel: "The day's scores on the ruler, from 0 to {max}",
+    scaleAvg: 'avg {n}',
     krillionAnswer: 'Answer {n}: {p} points',
     homeHint: "Pick a game: leaderboard, trend, head to head and every player's stats.",
     homeNoData: 'No results yet.',
@@ -978,7 +990,12 @@ export function gridNode(id, r) {
         rounds.map((p, i) =>
           el(
             'span',
-            { class: 'cell', title: tips[i], style: `--fill:${Math.max(0, Math.min(100, p))}%` },
+            {
+              // max = manche perfetta, zero = nessun punto: i temi le disegnano in modo diverso
+              class: `cell${p >= 100 ? ' max' : p <= 0 ? ' zero' : ''}`,
+              title: tips[i],
+              style: `--fill:${Math.max(0, Math.min(100, p))}%`,
+            },
             String(p),
           ),
         ),
@@ -986,6 +1003,32 @@ export function gridNode(id, r) {
     }
   }
   return el('span', { class: 'emoji-grid' }, String(r.grid ?? '').replace(/\s*\n\s*/g, ' '));
+}
+
+/**
+ * Intestazione delle caselle del risultato, una voce per casella: i generi di Songless ("TOP", "POP",
+ * …) o il numero della manche di Magnitudle. Vuoto se il gioco non ha caselle.
+ * @param {string} id
+ * @param {object[]} results i risultati di un puzzle
+ * @returns {Array<{ short: string, full: string }>}
+ */
+export function gridLegend(id, results) {
+  if (id === 'songless') {
+    // i generi sono gli stessi per tutti: vale il risultato che ne ha di più
+    const rows = results.map((r) => songlessRows(r.grid)).sort((a, b) => b.length - a.length)[0] ?? [];
+    return rows.map((row, i) => {
+      const full = row.genre || `#${i + 1}`;
+      return { short: full.split(/\s+/)[0].slice(0, 4), full };
+    });
+  }
+  if (id === 'magnitudle') {
+    const n = Math.max(0, ...results.map((r) => magnitudleRounds(r.grid).length));
+    return Array.from({ length: n }, (_, i) => ({
+      short: String(i + 1),
+      full: t('roundName', { n: i + 1 }),
+    }));
+  }
+  return [];
 }
 
 /**

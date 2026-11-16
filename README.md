@@ -6,8 +6,8 @@ una pagina per ogni gioco, ognuna col suo colore:
 | Gioco | Pagina | Colore |
 | --- | --- | --- |
 | 🦐 Krillion | `/krillion/` | fondale marino in pixel art, ispirato a [krillion.io](https://krillion.io) |
-| 🎵 Songless | `/songless/` | nero |
-| 📏 Magnitudle | `/magnitudle/` | rosso |
+| 🎵 Songless | `/songless/` | nero e verde: un lettore musicale, con equalizzatore e forma d'onda |
+| 📏 Magnitudle | `/magnitudle/` | rosso: un righello su carta millimetrata |
 
 ```
 WhatsApp (gruppo)  ──►  bot (bot/)  ──►  docs/data/<gioco>.json su GitHub  ──►  sito (GitHub Pages)
@@ -82,6 +82,12 @@ Hip Hop ed EDM sono al 3° quadrato: 60 + 60 = **120 punti**. Sul sito ogni risu
 caselle, una per genere, con il tentativo in cui è stata trovata la canzone (✕ = non trovata); la pagina
 mostra anche come va il gruppo con ogni genere.
 
+La pagina di Songless è un lettore musicale di notte: nera con un solo verde, l'equalizzatore accanto al
+titolo e sotto la forma d'onda di una canzone che suona. Il puzzle del giorno ha la barra di avanzamento
+(dove si trova nello storico), le caselle dei generi stanno sotto il nome del genere (più chiara = canzone
+trovata prima), la media in classifica è anche una barra e i generi hanno la barra delle canzoni trovate.
+Tutto questo è in [`docs/assets/songless/`](docs/assets/songless/) e non tocca le altre pagine.
+
 ### 📏 Magnitudle
 
 ```
@@ -99,6 +105,20 @@ Score: 246/500
 
 Il punteggio è quello del gioco (`Score`). Magnitudle non ha un numero: il puzzle è la data scritta nel
 messaggio.
+
+Il gioco cambia ogni tanto il testo che si condivide, quindi il bot accetta anche le varianti: `Size It Up`
+senza `Magnitudle`, il totale scritto solo come `246/500`, le manche scritte come `🟥🟥🟥🟥⬜ 71%`,
+`71/100` o `1. ████░ 71`, la data scritta in un altro modo o assente (vale il giorno del messaggio) e
+perfino il messaggio senza intestazione, se ha almeno tre righe "quadrati + punti". Se un messaggio sembra
+un risultato ma il bot non lo riconosce, lo segnala: vedi
+[Se un gioco non si aggiorna più](#se-un-gioco-non-si-aggiorna-più).
+
+La pagina di Magnitudle è un tavolo da disegno rosso: l'intestazione è un grande righello con cinque
+quadrati che crescono ("Size It Up"), lo sfondo è carta millimetrata. Sotto la data del giorno c'è il
+**righello del giorno**: un punto per giocatore sulla scala da 0 a 500 (col nome e i punti al passaggio
+del mouse o al tocco) e la media del giorno. Ogni manche è una barretta riempita in proporzione ai punti;
+quelle perfette (100) hanno il bordo chiaro. Tutto questo è in
+[`docs/assets/magnitudle/`](docs/assets/magnitudle/) e non tocca le altre pagine.
 
 ### Regole comuni
 
@@ -242,6 +262,25 @@ sudo systemctl enable --now games-daily-bot
 journalctl -u games-daily-bot -f
 ```
 
+### Se un gioco non si aggiorna più
+
+Se gli altri giochi si aggiornano e uno no, quasi sempre quel gioco ha cambiato il testo che si condivide
+e il bot non lo riconosce più. Per vedere cosa arriva:
+
+- nel log del bot (`pm2 logs games-daily-bot`) i messaggi del gruppo che sembrano risultati ma non vengono
+  riconosciuti compaiono così, e finiscono anche in `bot/state/non-riconosciuti.log`:
+
+  ```
+  15/11/2026, 10:01:12 | ❓ Sembra un risultato ma non lo riconosco – Anna: Size It Up ⏎ Nov 15 ⏎ …
+  ```
+
+- con l'[export della chat](#recuperare-lo-storico): `npm run import -- _chat.txt --dry-run` elenca in fondo
+  gli ultimi messaggi non riconosciuti, senza salvare nulla.
+
+Con il testo di uno di quei messaggi si aggiorna [`bot/src/parser.js`](bot/src/parser.js) (e si aggiunge un
+test in `bot/test/parser.test.js`). Dopo aver aggiornato il bot (`git pull` e riavvio), i risultati persi nel
+frattempo si recuperano con l'export della chat.
+
 ## Nomi dei giocatori
 
 Il bot usa il nome con cui hai salvato la persona in rubrica; se non c'è, il nome che la persona ha
@@ -322,7 +361,14 @@ docs/                    il sito (GitHub Pages)
     sea.css                colori, caratteri pixel, cielo, acqua e fondale
     sea.js                 nuvole, barca, pesci, meduse, bolle, fondale e profondimetro
     sprites.js             gli sprite in pixel art, disegnati a caratteri
-  assets/fonts/          Silkscreen, Jersey 10 e Space Mono (licenza OFL, in OFL.txt)
+  assets/songless/       il lettore musicale della pagina di Songless:
+    stage.css              colori, caratteri, caselle dei generi, barre
+    stage.js               l'equalizzatore accanto al titolo e la forma d'onda
+  assets/magnitudle/     il righello della pagina di Magnitudle:
+    ruler.css              colori, caratteri, carta millimetrata, barrette delle manche
+    ruler.js               la scala del righello e i quadrati dell'intestazione
+  assets/fonts/          i caratteri delle tre pagine (licenza OFL, in OFL.txt): Silkscreen, Jersey 10 e
+                         Space Mono per Krillion, Unbounded per Songless, Barlow Condensed per Magnitudle
   data/krillion.json     i risultati (uno per gioco, scritti dal bot)
   data/songless.json
   data/magnitudle.json
