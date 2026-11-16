@@ -5,7 +5,7 @@
 //   Android: 03/10/26, 13:24 - Daniel: Songless #432
 //   Inglese: 10/3/26, 1:24 PM - Daniel: Magnitudle — Size It Up
 
-import { parseMessage } from './parser.js';
+import { looksLikeResult, parseMessage } from './parser.js';
 import { localDate } from './stats.js';
 
 const LINE_RE = new RegExp(
@@ -138,4 +138,15 @@ export function resultsFromExport(text, opts = {}) {
     }
   }
   return results;
+}
+
+/**
+ * I messaggi di un export che sembrano risultati ma che parseMessage() non riconosce
+ * (per esempio quando un gioco cambia il testo da condividere).
+ * @param {string} text
+ * @param {{ timeZone?: string, dateOrder?: 'dmy' | 'mdy' | 'ymd' }} [opts]
+ * @returns {Array<{ sender: string, ts: number, date: string, text: string }>}
+ */
+export function unrecognizedFromExport(text, opts = {}) {
+  return parseExport(text, opts).filter((msg) => !parseMessage(msg.text).length && looksLikeResult(msg.text));
 }

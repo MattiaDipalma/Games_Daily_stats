@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseMessage, puzzleLabel, songlessRow } from '../src/parser.js';
+import { looksLikeResult, parseMessage, puzzleLabel, songlessRow } from '../src/parser.js';
 
 // I messaggi così come arrivano nel gruppo (vedi screenshot nel README)
 const KRILLION = 'Krillion #111 🦐\n335\n\n🦑🐟🏮🐟🦑🦑🫧';
@@ -129,6 +129,47 @@ test('Magnitudle: frasi in chat non sono risultati', () => {
   assert.deepEqual(parseMessage('Magnitudle 2026-02-30\nScore: 100/500'), []);
 });
 
+// Il gioco cambia ogni tanto il testo da condividere: queste varianti valgono lo stesso.
+const ROUNDS = [71, 12, 14, 49, 100];
+const GRID = '🟥🟥🟥🟥⬜ 71\n🟥⬜⬜⬜⬜ 12\n🟥⬜⬜⬜⬜ 14\n🟥🟥⬜⬜⬜ 49\n🟥🟥🟥🟥🟥 100';
+
+test('Magnitudle: "Size It Up" senza "Magnitudle" e senza "Score"', () => {
+  const r = one(`📏 Size It Up — Nov 15\n246/500\n\n${GRID}`);
+  assert.deepEqual(r, { game: 'magnitudle', puzzle: null, score: 246, grid: GRID });
+});
+
+test('Magnitudle: punti delle manche scritti in altri modi', () => {
+  for (const suffix of ['%', ' pts', '/100', ' punti']) {
+    const text = ['Magnitudle', ...ROUNDS.map((p) => `🟥🟥🟥⬜⬜ ${p}${suffix}`)].join('\n');
+    assert.equal(one(text).score, 246, suffix);
+  }
+  const numbered = ROUNDS.map((p, i) => `${i + 1}. ████░ ${p}/100`).join('\n');
+  const r = one(`Size It Up 2026-11-15\nTotale: 246 / 500\n${numbered}`);
+  assert.deepEqual([r.puzzle, r.score], ['2026-11-15', 246]);
+  assert.equal(r.grid.split('\n')[0], '████░ 71');
+});
+
+test('Magnitudle: solo il totale "N/500", senza griglia e senza data', () => {
+  const r = one('Magnitudle — Size It Up\n389/500');
+  assert.deepEqual([r.puzzle, r.score, r.grid], [null, 389, '']);
+  assert.deepEqual(parseMessage('Magnitudle\n3890/500'), []);
+});
+
+test('Magnitudle: senza intestazione basta la griglia (almeno tre manche)', () => {
+  const r = one(`Score: 246/500\n${GRID}`);
+  assert.deepEqual([r.game, r.puzzle, r.score], ['magnitudle', null, 246]);
+  assert.equal(one(`oggi così\n${GRID}`).score, 246);
+  // due righe sole, o righe che non finiscono con i punti, non bastano
+  assert.deepEqual(parseMessage('🟥🟥⬜⬜⬜ 40\n🟥🟥🟥⬜⬜ 60'), []);
+  assert.deepEqual(parseMessage('⬜⬜🟩⬛⬛ [Pop]\n⬜🟩⬛⬛⬛ [Rock]\n🟩⬛⬛⬛⬛ [EDM]'), []);
+  assert.deepEqual(parseMessage('🟥🟥🟥 150\n🟥🟥🟥 200\n🟥🟥🟥 300'), []);
+});
+
+test('Magnitudle: un commento con dei quadrati non è una manche', () => {
+  assert.deepEqual(parseMessage('magnitudle oggi impossibile 🟥🟥 2 su 5'), []);
+  assert.equal(one(`Magnitudle\n${GRID}\nla terza 🟥 era impossibile, 3 volte`).score, 246);
+});
+
 // ---------------------------------------------------------------------------
 // Più giochi nello stesso messaggio
 
@@ -160,13 +201,36 @@ test('messaggi che non sono risultati', () => {
     '',
     'machsch du?',
     'Krillion #80 🦐',
-    'Krillion #80 🦐\n🦐⚪🦐',
+    'Krillion #80 🦐\nPunteggio: due e ottantacinque\n🦐⚪🦐',
     'hai fatto il krillion #80?\nio ho fatto 3 errori',
     '1. Nils\n2. Daniel\n3. Nic',
     'Songless #432',
     'chi ha fatto songless #432?\nio 🟩',
   ]) {
     assert.deepEqual(parseMessage(text), [], String(text));
+  }
+});
+
+test('looksLikeResult: messaggi che sembrano risultati (per il log dei non riconosciuti)', () => {
+  for (const text of [
+    'Magnitudle — Size It Up\nNov 15\nRisultato: quasi perfetto\n430',
+    'Size It Up\n⭐⭐⭐⭐ 430 su 500 — 4/5',
+    'Krillion #80 🦐\nPunteggio: due e ottantacinque\n🦐⚪🦐',
+    'Nuovo gioco\n🟪🟪🟪⬜⬜\n🟪🟪⬜⬜⬜',
+  ]) {
+    assert.deepEqual(parseMessage(text), [], text);
+    assert.equal(looksLikeResult(text), true, text);
+  }
+  for (const text of [
+    null,
+    '',
+    'machsch du?',
+    'hai fatto il krillion #80?\nio ho fatto 3 errori',
+    'magnitudle oggi impossibile',
+    'chi ha fatto songless #432?\nio 🟩',
+    '1. Nils\n2. Daniel\n3. Nic',
+  ]) {
+    assert.equal(looksLikeResult(text), false, String(text));
   }
 });
 

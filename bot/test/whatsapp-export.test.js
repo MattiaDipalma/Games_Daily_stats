@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseExport, resultsFromExport, zonedToUnix } from '../src/whatsapp-export.js';
+import {
+  parseExport,
+  resultsFromExport,
+  unrecognizedFromExport,
+  zonedToUnix,
+} from '../src/whatsapp-export.js';
 
 const IOS = [
   '\u200e[02/10/26, 09:00:00] Games Daily: \u200eI messaggi e le chiamate sono crittografati end-to-end.',
@@ -86,4 +91,19 @@ test('export in inglese (mese/giorno, AM/PM)', () => {
 test('zonedToUnix gestisce ora legale e solare', () => {
   assert.equal(zonedToUnix(2026, 1, 15, 12, 0, 0, 'Europe/Zurich'), Date.UTC(2026, 0, 15, 11) / 1000);
   assert.equal(zonedToUnix(2026, 7, 15, 12, 0, 0, 'Europe/Zurich'), Date.UTC(2026, 6, 15, 10) / 1000);
+});
+
+test('unrecognizedFromExport: i messaggi che sembrano risultati ma non lo sono', () => {
+  const text = [
+    IOS,
+    '[04/10/26, 08:10:00] Anna: Magnitudle — Size It Up',
+    'Oct 4',
+    'Risultato: quasi perfetto',
+    '430',
+  ].join('\n');
+  assert.deepEqual(unrecognizedFromExport(IOS), []);
+  assert.deepEqual(
+    unrecognizedFromExport(text).map((m) => [m.sender, m.date, m.text.split('\n').length]),
+    [['Anna', '2026-10-04', 4]],
+  );
 });

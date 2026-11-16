@@ -10,6 +10,10 @@
 //   1° quadrato 100 punti, 2° 85, 3° 60, 4° 30, 5° 10, nessun verde 0.
 //   Quadrati bianchi, neri e rossi non danno punti.
 // - Magnitudle: il punteggio è "Score: N/500"; il puzzle è la data scritta nel messaggio.
+//   Il gioco cambia ogni tanto il testo che si condivide, quindi qui si accettano anche le varianti:
+//   "Size It Up" senza "Magnitudle", "389/500" senza "Score", righe come "🟥🟥🟥🟥⬜ 71%" o
+//   "1. ████░ 71/100", una data scritta in un altro modo (vale il giorno del messaggio) e, se manca
+//   del tutto l'intestazione, un messaggio fatto solo di righe "quadrati + punti".
 //
 // Un messaggio può contenere più giochi: ogni intestazione apre un blocco nuovo.
 
@@ -25,7 +29,8 @@ const MAX_SCORE = 100000;
 const HEADERS = {
   krillion: /krillion\s*#\s*(\d+)/i,
   songless: /songless\s*#\s*(\d+)/i,
-  magnitudle: /magnitudle/i,
+  // dal nome del gioco ("Magnitudle — Size It Up"): basta una delle due parti
+  magnitudle: /magnitudle|size\s*it\s*up/i,
 };
 
 // caratteri invisibili che WhatsApp inserisce a volte (LRM, RLM, ZWSP, BOM, isolamenti).
@@ -62,6 +67,17 @@ const SQUARES = new Set([
 
 // "285", "1'234", "1.234", "1,234", "1 234": separatori delle migliaia ammessi.
 const SCORE_RE = /^\D{0,3}?(\d{1,3}(?:['’., ]\d{3})+|\d+)(?!\d)/;
+
+// Magnitudle: barre disegnate con altri caratteri ("████░ 71", "■■■□□ 49", "●●●○○ 60").
+const BARS = new Set([...SQUARES, ...'■□▓▒░█▰▱●○◯⬤◉🔲🔳']);
+// "Score: 246/500", "Punteggio 246", "Total: 246 / 500"
+const MAG_SCORE_RE =
+  /(?:score|punteggio|punkte|punti|points|total[ei]?)\s*[:=]?\s*(\d[\d'’.,]*)(?:\s*\/\s*(\d+))?/i;
+// "246/500" senza la parola "Score" (il massimo di Magnitudle è 500)
+const MAG_TOTAL_RE = /(?<![\d/.,])(\d{1,3})\s*\/\s*(500)(?![\d/])/;
+// punti di una manche, tolti i quadrati: "71", "71%", "71 pts", "71/100", "1. 71", "R2: 49"
+const MAG_ROW_RE =
+  /^(?:(?:r|round|manche|runde)?\s*\d\s*[.):]\s*)?\+?(\d{1,3})\s*(?:%|\/\s*100|pts?\.?|p\.?|punti|points?|punkte)?$/i;
 const URL_RE = /https?:\/\//i;
 const DATE_RE = /(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)/;
 
@@ -78,11 +94,11 @@ function toLines(text) {
 const symbols = (line) => [...line.replace(/\ufe0f/g, '')];
 
 /** I quadrati di una riga e il resto del testo (etichetta o numero). */
-function squaresOf(line) {
+function squaresOf(line, set = SQUARES) {
   const squares = [];
   let rest = '';
   for (const c of symbols(line)) {
-    if (SQUARES.has(c)) squares.push(c);
+    if (set.has(c)) squares.push(c);
     else rest += c;
   }
   return { squares, rest: rest.trim() };
@@ -161,8 +177,24 @@ function parseSonglessBlock(lines) {
   return { puzzle, score, grid };
 }
 
-function parseMagnitudleBlock(lines) {
+/** Una manche di Magnitudle ("🟥🟥🟥🟥⬜ 71"): i quadrati e i punti (0–100), oppure null. */
+function magnitudleRow(line) {
+  const { squares, rest } = squaresOf(line, BARS);
+  if (!squares.length || squares.length > 12) return null;
+  const m = rest.match(MAG_ROW_RE);
+  if (!m) return null;
+  const points = Number(m[1]);
+  return points <= 100 ? { squares, points } : null;
+}
+
+/**
+ * @param {string[]} lines
+ * @param {{ header?: boolean }} [opts] header = false: messaggio senza il nome del gioco, riconosciuto
+ *   solo dalla forma (almeno tre righe "quadrati + punti")
+ */
+function parseMagnitudleBlock(lines, { header = true } = {}) {
   let date = null;
+  let badDate = false;
   let score = null;
   let max = null;
   const rows = [];
@@ -170,21 +202,29 @@ function parseMagnitudleBlock(lines) {
   for (const line of lines) {
     if (!date) {
       const d = line.match(DATE_RE);
-      if (d) date = isoDate(d[1], d[2], d[3]);
+      if (d) {
+        date = isoDate(d[1], d[2], d[3]);
+        badDate ||= !date;
+      }
     }
-    const s = line.match(/score\s*:?\s*(\d[\d'’.,]*)(?:\s*\/\s*(\d+))?/i);
-    if (s && score === null) {
-      score = number(s[1]);
-      max = s[2] ? Number(s[2]) : null;
+    const row = magnitudleRow(line);
+    if (row) {
+      rows.push(row);
       continue;
     }
-    const { squares, rest } = squaresOf(line);
-    if (squares.length && /^\d{1,4}$/.test(rest)) rows.push({ squares, points: Number(rest) });
+    if (score !== null) continue;
+    const s = line.match(MAG_SCORE_RE) ?? line.match(MAG_TOTAL_RE);
+    if (s) {
+      score = number(s[1]);
+      max = s[2] ? Number(s[2]) : null;
+    }
   }
 
+  if (!header && rows.length < 3) return null;
   if (score === null && rows.length) score = rows.reduce((sum, r) => sum + r.points, 0);
-  // Senza la griglia serve almeno la data, così "magnitudle: score 300" in chat non conta.
-  if (score === null || (!rows.length && !date)) return null;
+  // Senza la griglia serve la data oppure il punteggio scritto come "N/500",
+  // così "magnitudle: score 300" in chat non conta (e nemmeno una data impossibile).
+  if (score === null || (!rows.length && !date && (!max || badDate))) return null;
   if (max && score > max) return null;
 
   const grid = rows.map((r) => `${r.squares.join('')} ${r.points}`).join('\n');
@@ -230,7 +270,34 @@ export function parseMessage(text) {
     seen.add(game);
     results.push({ game, ...parsed });
   });
+
+  // Nessun gioco nominato: un messaggio fatto di righe "quadrati + punti" è comunque un Magnitudle.
+  if (!starts.length) {
+    const parsed = parseMagnitudleBlock(lines, { header: false });
+    if (parsed) results.push({ game: 'magnitudle', ...parsed });
+  }
   return results;
+}
+
+const GAME_WORD_RE = /krillion|songless|magnitudle|size\s*it\s*up/i;
+
+/**
+ * Il messaggio sembra il risultato di un gioco? Serve solo per segnalare nel log i messaggi che
+ * parseMessage() non ha riconosciuto (per esempio quando un gioco cambia il testo da condividere):
+ * il nome di un gioco insieme a un numero da solo, a un punteggio o a una riga di quadrati, oppure
+ * almeno due righe di quadrati.
+ * @param {string | null | undefined} text
+ */
+export function looksLikeResult(text) {
+  if (!text || typeof text !== 'string') return false;
+  const lines = toLines(text).filter((l) => l !== '');
+  const gridRows = lines.filter((l) => squaresOf(l, BARS).squares.length >= 3).length;
+  if (gridRows >= 2) return true;
+  if (!lines.some((l) => GAME_WORD_RE.test(l))) return false;
+  return (
+    gridRows > 0 ||
+    lines.some((l) => /^\D{0,3}\d{1,4}\D{0,3}$/.test(l) || /\d\s*\/\s*\d|score|punteggio/i.test(l))
+  );
 }
 
 /** Etichetta del puzzle: "Krillion #111", "Magnitudle 2026-11-03". */

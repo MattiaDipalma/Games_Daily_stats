@@ -11,7 +11,7 @@ import { loadConfig } from './config.js';
 import { GAMES, GAME_NAMES } from './parser.js';
 import { createStores } from './store.js';
 import { comparePuzzles, resolveName } from './stats.js';
-import { resultsFromExport } from './whatsapp-export.js';
+import { resultsFromExport, unrecognizedFromExport } from './whatsapp-export.js';
 
 function parseArgs(argv) {
   const args = { files: [], dryRun: false, local: false, dateOrder: undefined };
@@ -39,11 +39,14 @@ async function main() {
 
   const config = loadConfig();
   const results = [];
+  const unrecognized = [];
   for (const file of args.files) {
     const text = await readFile(file, 'utf8');
-    const found = resultsFromExport(text, { timeZone: config.timeZone, dateOrder: args.dateOrder });
+    const opts = { timeZone: config.timeZone, dateOrder: args.dateOrder };
+    const found = resultsFromExport(text, opts);
     console.log(`${file}: ${found.length} risultati trovati`);
     results.push(...found);
+    unrecognized.push(...unrecognizedFromExport(text, opts).filter((m) => m.date >= config.startDate));
   }
 
   for (const game of GAMES) {
@@ -58,6 +61,18 @@ async function main() {
     }
     for (const [name, n] of [...perPlayer].sort((a, b) => b[1] - a[1])) {
       console.log(`  ${name.padEnd(24)} ${n}`);
+    }
+  }
+
+  // Messaggi che sembrano risultati ma non sono stati riconosciuti: di solito un gioco ha cambiato
+  // il testo da condividere. Si mostrano gli ultimi, così si vede com'è fatto il messaggio nuovo.
+  if (unrecognized.length) {
+    console.log(
+      `\n${unrecognized.length} messaggi sembrano risultati ma non sono stati riconosciuti. Gli ultimi:`,
+    );
+    for (const m of unrecognized.slice(-5)) {
+      console.log(`\n  ${m.date} – ${m.sender}:`);
+      for (const line of m.text.split('\n').slice(0, 12)) console.log(`    ${line}`);
     }
   }
 
