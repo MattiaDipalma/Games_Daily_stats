@@ -5,7 +5,7 @@
 // Si collega al tuo account come "dispositivo collegato" (come WhatsApp Web),
 // legge soltanto: non invia messaggi e non segna nulla come letto.
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import pino from 'pino';
 import qrcode from 'qrcode-terminal';
@@ -32,6 +32,8 @@ const log = (...args) =>
 
 const contactsFile = resolve(config.stateDir, 'contacts.json');
 const pendingFile = resolve(config.stateDir, 'pending.json');
+// messaggi che sembrano risultati ma che il bot non ha riconosciuto (un messaggio per riga)
+const unrecognizedFile = resolve(config.stateDir, 'non-riconosciuti.log');
 
 /** chiave → risultato da salvare (con il campo "game") */
 const pending = new Map();
@@ -47,6 +49,15 @@ const collector = new Collector({
     );
     await savePending().catch(() => {});
     scheduleFlush();
+  },
+  // Un gioco ha cambiato il testo da condividere? Il messaggio finisce nel log e in
+  // state/non-riconosciuti.log, così si vede subito cosa è arrivato.
+  onUnrecognized: async ({ player, text, ts, date }) => {
+    if (date < config.startDate) return;
+    const oneLine = text.replace(/\s*\n\s*/g, ' ⏎ ').slice(0, 400);
+    log(`❓ Sembra un risultato ma non lo riconosco – ${player}: ${oneLine}`);
+    const row = { at: new Date(ts * 1000).toISOString(), player, text: text.slice(0, 2000) };
+    await appendFile(unrecognizedFile, JSON.stringify(row) + '\n').catch(() => {});
   },
 });
 

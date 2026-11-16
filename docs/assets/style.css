@@ -1,5 +1,7 @@
 /* Games Daily – stile comune. Ogni gioco ha il suo tema (html[data-game]):
    Krillion blu scuro, Songless nero, Magnitudle rosso. La home è grigio scuro.
+   Le pagine dei giochi aggiungono sopra il loro tema: krillion/sea.css (fondale marino),
+   songless/stage.css (palco e forma d'onda) e magnitudle/ruler.css (righello).
    I colori dei giocatori (--s1…--s25) sono la palette categoriale per sfondi scuri,
    verificata (contrasto ≥ 3:1 e distinguibili anche per daltonici) su tutti e tre i temi. */
 
@@ -532,6 +534,120 @@ select {
   background: color-mix(in oklab, var(--bar) var(--fill), var(--surface-2));
 }
 
+/* Intestazione delle caselle (i generi di Songless, le manche di Magnitudle): stessa griglia
+   delle righe della lista, così ogni voce sta sopra la sua casella. */
+.day-legend {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-areas: '. grid .';
+  column-gap: 12px;
+  padding: 0 4px 2px;
+}
+
+.day-legend .mini {
+  grid-area: grid;
+}
+
+.mini.lg .cell {
+  height: 14px;
+  background: none;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Righello del giorno (Magnitudle): un punto per giocatore tra 0 e il punteggio massimo.
+   I trattini della scala li disegna game.js in SVG, al pixel. */
+.day-scale {
+  margin: 4px 4px 14px;
+}
+
+.ds-plot {
+  position: relative;
+}
+
+.ds-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: 0 0 5px -5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+/* bersaglio più grande del punto, per il dito e per il mouse */
+.ds-dot::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+}
+
+.ds-dot:hover,
+.ds-dot:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+.ds-avg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--text-2);
+}
+
+.ds-avg b {
+  position: absolute;
+  top: -2px;
+  left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.ds-avg.flip b {
+  left: auto;
+  right: 6px;
+}
+
+.ds-axis {
+  position: relative;
+  height: 32px;
+}
+
+.ds-axis svg {
+  display: block;
+  overflow: visible;
+}
+
+.ds-axis line {
+  stroke: var(--axis);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.ds-axis span {
+  position: absolute;
+  top: 16px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ds-axis span:first-of-type {
+  transform: none;
+}
+
+.ds-axis span:last-of-type {
+  transform: translateX(-100%);
+}
+
 /* ---------- filtri ---------- */
 
 .filters {
@@ -750,6 +866,149 @@ table {
   text-align: left !important;
 }
 
+/* la media come barra accanto al numero (rispetto al punteggio massimo del gioco):
+   la accendono i temi di Songless e Magnitudle con display: inline-block */
+.meter {
+  display: none;
+  width: 84px;
+  height: 4px;
+  margin-right: 10px;
+  border-radius: 2px;
+  background: var(--grid);
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.meter i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+/* Songless, generi: quante canzoni sono state trovate, come barra */
+.hits-bar {
+  display: inline-block;
+  width: 130px;
+  height: 8px;
+  margin-right: 10px;
+  border-radius: 4px;
+  background: var(--grid);
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.hits-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.hits-pct {
+  display: inline-block;
+  min-width: 3em;
+  font-weight: 650;
+}
+
+.hits-n {
+  display: inline-block;
+  min-width: 4.4em;
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Generi su schermi stretti: ogni genere su tre righe (nome e percentuale, la barra, il resto),
+   così non serve scorrere di lato. Le etichette vengono dalle intestazioni (data-label). */
+@media (max-width: 700px) {
+  .genres,
+  .genres tbody {
+    display: block;
+  }
+
+  .genres thead {
+    display: none;
+  }
+
+  .genres tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'genre top'
+      'hits hits'
+      'pts try';
+    column-gap: 16px;
+    row-gap: 4px;
+    align-items: baseline;
+    padding: 10px 0;
+    border-top: 1px solid var(--grid);
+  }
+
+  .genres tbody tr:first-child {
+    border-top: 0;
+  }
+
+  .genres td {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+
+  .genres .c-genre {
+    grid-area: genre;
+    font-weight: 600;
+  }
+
+  .genres .c-hits {
+    grid-area: hits;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .genres .hits-bar {
+    flex: 1;
+    width: auto;
+    margin: 0;
+  }
+
+  .genres .hits-pct {
+    min-width: 0;
+  }
+
+  .genres .hits-n {
+    min-width: 0;
+    margin: 0;
+  }
+
+  .genres .c-pts {
+    grid-area: pts;
+  }
+
+  .genres .c-try {
+    grid-area: try;
+  }
+
+  .genres .c-top {
+    grid-area: top;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+  }
+
+  .genres td[data-label] {
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .genres td[data-label]::before {
+    content: attr(data-label) ' ';
+    color: var(--muted);
+  }
+}
+
 #lb-note:empty {
   display: none;
 }
@@ -835,6 +1094,11 @@ table {
   #leaderboard td.c-avg {
     font-size: 17px;
     font-weight: 650;
+  }
+
+  #leaderboard .meter {
+    width: 52px;
+    margin-right: 8px;
   }
 
   #leaderboard td:not(.pos, .c-name, .c-avg) {

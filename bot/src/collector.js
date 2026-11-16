@@ -1,7 +1,7 @@
 // Trasforma i messaggi WhatsApp (formato Baileys) in risultati dei giochi.
 
 import { jidNormalizedUser, normalizeMessageContent, toNumber } from 'baileys';
-import { parseMessage } from './parser.js';
+import { looksLikeResult, parseMessage } from './parser.js';
 import { aliasKey, localDate, maskPhone } from './stats.js';
 
 const phoneOf = (jid) => (jid?.endsWith('@s.whatsapp.net') ? jid.split('@')[0] : null);
@@ -21,11 +21,16 @@ export function messageText(message) {
 
 export class Collector {
   /**
-   * @param {{ config: object, onResult: (r: object, info: { edit: boolean }) => unknown }} opts
+   * @param {{ config: object, onResult: (r: object, info: { edit: boolean }) => unknown,
+   *           onUnrecognized?: (m: { player: string, text: string, ts: number, date: string }) => unknown,
+   *         }} opts
+   *   onUnrecognized: un messaggio del gruppo che sembra un risultato ma non è stato riconosciuto
+   *   (per esempio quando un gioco cambia il testo da condividere)
    */
-  constructor({ config, onResult }) {
+  constructor({ config, onResult, onUnrecognized = null }) {
     this.config = config;
     this.onResult = onResult;
+    this.onUnrecognized = onUnrecognized;
     /** jid → { name?: nome in rubrica, notify?: nome scelto dalla persona } */
     this.contacts = new Map();
     this.groupJid = config.groupJid ?? null;
@@ -108,7 +113,8 @@ export class Collector {
     const { text, forwarded } = messageText(msg.message);
     if (!text || forwarded) return [];
     const parsed = parseMessage(text);
-    if (!parsed.length) return [];
+    const unrecognized = !parsed.length && !!this.onUnrecognized && looksLikeResult(text);
+    if (!parsed.length && !unrecognized) return [];
 
     if (!this.groupJid) {
       // gruppo non ancora noto: si tengono da parte solo i risultati
@@ -119,6 +125,10 @@ export class Collector {
     const ts = Number(toNumber(msg.messageTimestamp ?? 0)) || Math.floor(Date.now() / 1000);
     const date = localDate(ts, this.config.timeZone);
     const player = await this.senderName(sock, msg);
+    if (unrecognized) {
+      await this.onUnrecognized({ player, text, ts, date });
+      return [];
+    }
     const results = [];
     for (const p of parsed) {
       const result = {

@@ -1,0 +1,634 @@
+/* Magnitudle ("Size It Up") – la pagina come un tavolo da disegno rosso: l'intestazione è un grande
+   righello, lo sfondo è carta millimetrata, i punteggi del giorno stanno su una scala da 0 a 500 e ogni
+   manche è una barretta riempita in proporzione ai punti.
+   Caricato solo da magnitudle/index.html, dopo style.css. La scala del righello e i quadrati che crescono
+   nell'intestazione li aggiunge ruler.js (solo decorazione). */
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-weight: 600;
+  src: url('../fonts/barlow-condensed-latin-600-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-weight: 700;
+  src: url('../fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+html[data-game='magnitudle'] {
+  --page: #1e0609;
+  --surface: #2c0a0f;
+  --surface-2: #43131a;
+  --text: #fff6f2;
+  --text-2: #f0cdc8;
+  --muted: #c99a97;
+  --grid: #47181f;
+  --axis: #73303a;
+  --border: rgba(255, 186, 176, 0.16);
+  --accent: #ffd9c0;
+  --cream: #ffe9d4;
+  --ink: #2a0508;
+  --bar: #e0303c;
+  --glow: transparent;
+  --good: #6fe39a;
+  --bad: #ffb3ad;
+  /* testa a testa: più chiaro (oro) = vince più spesso, più scuro = perde più spesso */
+  --div-pos: #f7c873;
+  --div-neg: #0b0203;
+  --div-mid: #3a1117;
+  /* dal 53% di oro in su la casella è chiara: testo scuro */
+  --h2h-flip: 53;
+  --ref: #d9aaa6;
+  --radius: 6px;
+  --display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  /* margine laterale della pagina (come .wrap) */
+  --gutter: 16px;
+  /* caselle delle manche: larghezza e distanza (la colonna è larga cinque caselle) */
+  --cell: 44px;
+  --cell-gap: 4px;
+  --cells-w: calc(5 * var(--cell) + 4 * var(--cell-gap));
+  /* la carta millimetrata parte dal bordo sinistro del contenuto, come lo zero del righello */
+  --mm-x: calc(50% - 494px);
+  --cm-x: calc(50% - 454px);
+}
+
+@media (max-width: 1040px) {
+  html[data-game='magnitudle'] {
+    --mm-x: var(--gutter);
+    --cm-x: var(--gutter);
+  }
+}
+
+body {
+  background:
+    linear-gradient(rgba(255, 200, 190, 0.05) 1px, transparent 1px) 0 0 / 100% 100px,
+    linear-gradient(90deg, rgba(255, 200, 190, 0.05) 1px, transparent 1px) var(--cm-x) 0 / 100px 100%,
+    linear-gradient(rgba(255, 200, 190, 0.028) 1px, transparent 1px) 0 0 / 100% 20px,
+    linear-gradient(90deg, rgba(255, 200, 190, 0.028) 1px, transparent 1px) var(--mm-x) 0 / 20px 100%,
+    var(--page);
+}
+
+::selection {
+  background: rgba(224, 48, 60, 0.5);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cream);
+  outline-offset: 2px;
+}
+
+/* ---------- intestazione: il righello ---------- */
+
+.top {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 0;
+  background:
+    linear-gradient(rgba(255, 233, 212, 0.07) 1px, transparent 1px) 0 0 / 100% 100px,
+    linear-gradient(90deg, rgba(255, 233, 212, 0.07) 1px, transparent 1px) var(--cm-x) 0 / 100px 100%,
+    linear-gradient(rgba(255, 233, 212, 0.035) 1px, transparent 1px) 0 0 / 100% 20px,
+    linear-gradient(90deg, rgba(255, 233, 212, 0.035) 1px, transparent 1px) var(--mm-x) 0 / 20px 100%,
+    linear-gradient(180deg, #ad1521 0%, #8e111b 60%, #7b0e17 100%);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.4);
+}
+
+.tab:hover {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.tab[aria-current='page'] {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 233, 212, 0.45);
+  color: #ffffff;
+}
+
+.hero {
+  position: relative;
+  padding-top: 24px;
+  padding-bottom: 62px;
+}
+
+/* il nome del gioco sopra il titolo */
+.hero::before {
+  content: 'Size It Up';
+  display: block;
+  margin-bottom: 8px;
+  font: 600 13px/1 var(--display);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(255, 233, 212, 0.78);
+}
+
+.hero h1 {
+  font-family: var(--display);
+  font-size: clamp(46px, 9vw, 84px);
+  font-weight: 700;
+  line-height: 0.88;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.hero-emoji {
+  display: none;
+}
+
+.sub {
+  margin-top: 12px;
+  color: rgba(255, 233, 212, 0.9);
+}
+
+.updated {
+  color: rgba(255, 233, 212, 0.7);
+}
+
+/* i trattini del righello lungo il bordo inferiore (ogni 10, 50 e 100 px) con i numeri */
+.ruler {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34px;
+  pointer-events: none;
+}
+
+.ruler .wrap {
+  position: relative;
+  height: 100%;
+}
+
+.ruler-ticks {
+  position: absolute;
+  bottom: 0;
+  left: calc(var(--gutter) - 3000px);
+  width: 9000px;
+  height: 18px;
+  background:
+    linear-gradient(90deg, var(--cream) 1px, transparent 1px) 0 100% / 100px 18px repeat-x,
+    linear-gradient(90deg, rgba(255, 233, 212, 0.85) 1px, transparent 1px) 0 100% / 50px 12px repeat-x,
+    linear-gradient(90deg, rgba(255, 233, 212, 0.6) 1px, transparent 1px) 0 100% / 10px 7px repeat-x;
+}
+
+.ruler-nums {
+  position: absolute;
+  left: var(--gutter);
+  bottom: 17px;
+  display: flex;
+}
+
+.ruler-nums span {
+  flex: none;
+  width: 100px;
+  padding-left: 5px;
+  font: 600 12px/1 var(--display);
+  color: rgba(255, 233, 212, 0.8);
+}
+
+/* "size it up": cinque quadrati che crescono, in fila sopra i numeri del righello */
+.sizes {
+  --k: 1;
+  position: absolute;
+  right: var(--gutter);
+  bottom: 36px;
+  display: flex;
+  align-items: flex-end;
+  gap: calc(10px * var(--k));
+}
+
+.sizes i {
+  width: calc(var(--s) * var(--k));
+  height: calc(var(--s) * var(--k));
+  border-radius: 3px;
+  background: var(--cream);
+  opacity: var(--o);
+}
+
+@media (max-width: 760px) {
+  .sizes {
+    --k: 0.55;
+  }
+
+  /* il sottotitolo lascia libero l'angolo dei quadrati */
+  .sub {
+    max-width: calc(100% - 150px);
+  }
+}
+
+/* ---------- card e titoli ---------- */
+
+.card,
+.tile,
+dialog {
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.card {
+  padding: 22px;
+  margin: 18px 0;
+}
+
+.card > h2,
+.card-head h2,
+dialog h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--display);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.card-head h2 {
+  flex: 1;
+}
+
+/* accanto a ogni titolo una linea di quota, come nei disegni tecnici: |————| */
+.card > h2::after,
+.card-head h2::after,
+dialog h3::after {
+  content: '';
+  flex: 1;
+  height: 9px;
+  border: solid var(--axis);
+  border-width: 0 1px;
+  background: linear-gradient(var(--axis), var(--axis)) 0 50% / 100% 1px no-repeat;
+}
+
+.card > h2 {
+  margin-bottom: 14px;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: var(--cream);
+}
+
+select,
+.chip,
+.tooltip {
+  border-radius: 4px;
+}
+
+/* ---------- il giorno ---------- */
+
+/* Magnitudle non ha un numero: il titolo del giorno è la data */
+.day-title-wrap h2 {
+  font: 600 13px/1 var(--display);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.day-title-wrap p {
+  margin-top: 6px;
+  font: 600 26px/1.05 var(--display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.day-head {
+  margin-bottom: 16px;
+}
+
+/* il righello del giorno */
+.day-scale {
+  margin: 0 8px 20px;
+}
+
+.ds-avg {
+  border-left-color: rgba(255, 233, 212, 0.75);
+}
+
+.ds-avg b {
+  font: 600 13px/1 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.ds-axis line {
+  stroke: rgba(255, 233, 212, 0.6);
+}
+
+.ds-axis span {
+  font: 600 13px/1 var(--display);
+  color: var(--text-2);
+}
+
+.day-list li {
+  padding: 9px 8px;
+  border-top: 1px dashed var(--grid);
+}
+
+.day-list li:first-child {
+  border-top: 0;
+}
+
+/* il primo del giorno: riga accesa con il bordo rosso */
+.day-list li.first {
+  background: linear-gradient(90deg, rgba(224, 48, 60, 0.28), rgba(224, 48, 60, 0.05) 70%, transparent);
+  box-shadow: inset 3px 0 0 var(--bar);
+}
+
+.day-list .rank {
+  font: 600 20px/1 var(--display);
+  color: var(--muted);
+}
+
+.day-list .rank.medal {
+  font-size: 22px;
+}
+
+.day-list .score {
+  font: 700 28px/1 var(--display);
+  letter-spacing: 0.01em;
+  color: var(--cream);
+}
+
+.day-list .grid {
+  overflow: visible;
+}
+
+.day-legend {
+  padding: 0 8px 2px;
+}
+
+/* una barretta per manche, riempita in proporzione ai punti */
+.mini {
+  gap: var(--cell-gap);
+}
+
+.mg .cell {
+  width: var(--cell);
+  min-width: 0;
+  height: 24px;
+  padding: 0;
+  border-radius: 3px;
+  font: 600 15px/1 var(--display);
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  background: linear-gradient(90deg, var(--bar) var(--fill), var(--surface-2) var(--fill));
+}
+
+/* manche perfetta: bordo chiaro */
+.mg .cell.max {
+  box-shadow: inset 0 0 0 1.5px var(--cream);
+}
+
+.mg .cell.zero {
+  color: var(--muted);
+}
+
+.mg.lg .cell {
+  height: 14px;
+  background: none;
+  font: 600 12px/1 var(--display);
+  color: var(--muted);
+}
+
+/* schermi larghi: le manche in una colonna a sé, allineate sotto i loro numeri */
+@media (min-width: 701px) {
+  .day-list li,
+  .day-legend {
+    grid-template-columns: 36px minmax(0, 1fr) var(--cells-w) 112px;
+    column-gap: 16px;
+  }
+
+  .day-list li {
+    grid-template-areas:
+      'rank name grid score'
+      'rank name grid delta';
+  }
+
+  .day-legend {
+    grid-template-areas: '. . grid .';
+  }
+
+  .day-list .grid,
+  .day-list .name {
+    grid-row: 1 / span 2;
+  }
+
+  .day-list .name {
+    font-size: 16px;
+  }
+}
+
+/* ---------- filtri, riquadri ---------- */
+
+.seg {
+  border-radius: 5px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.seg button {
+  border-radius: 3px;
+  font: 600 15px/1.35 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.seg.small button {
+  font-size: 14px;
+}
+
+.seg button[aria-pressed='true'] {
+  background: var(--cream);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.filters .muted {
+  font: 600 14px/1 var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* riquadri con i crocini di taglio negli angoli */
+.tile {
+  position: relative;
+  padding: 16px 18px 14px;
+}
+
+.tile::before,
+.tile::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: solid rgba(255, 233, 212, 0.45);
+}
+
+.tile::before {
+  top: 6px;
+  left: 6px;
+  border-width: 1px 0 0 1px;
+}
+
+.tile::after {
+  right: 6px;
+  bottom: 6px;
+  border-width: 0 1px 1px 0;
+}
+
+.tile .label {
+  font: 600 14px/1.2 var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tile .value {
+  margin-top: 6px;
+  font: 700 38px/1 var(--display);
+  color: var(--cream);
+}
+
+.tile .hint {
+  margin-top: 4px;
+}
+
+.small-tiles .tile {
+  background: var(--page);
+  box-shadow: none;
+}
+
+.small-tiles .value {
+  font-size: 28px;
+}
+
+/* ---------- tabelle ---------- */
+
+.lb th {
+  font: 600 14px/1.2 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lb th button {
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.lb th[aria-sort] button {
+  color: var(--cream);
+}
+
+.lb tbody tr:hover td {
+  background: rgba(255, 233, 212, 0.035);
+}
+
+/* la media anche come barra, con una tacca ogni 125 punti: 500 punti = barra piena */
+.meter {
+  display: inline-block;
+  height: 6px;
+  border-radius: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 233, 212, 0.4) 0 1px, transparent 1px 25%), var(--surface-2);
+}
+
+.meter i {
+  border-radius: 0;
+  background: var(--bar);
+}
+
+/* numeri larghi uguali, così le barre partono tutte dallo stesso punto */
+.avg-num {
+  display: inline-block;
+  min-width: 3.3em;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: rgba(255, 233, 212, 0.4);
+}
+
+/* testa a testa: sulle caselle chiare il testo diventa scuro */
+.h2h td div {
+  border-radius: 3px;
+}
+
+.h2h td div.win.hi {
+  color: #140203;
+  font-weight: 600;
+}
+
+dialog::backdrop {
+  background: rgba(12, 2, 3, 0.75);
+}
+
+#pd-title {
+  font: 700 38px/1 var(--display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+@media (max-width: 520px) {
+  html[data-game='magnitudle'] {
+    --gutter: 12px;
+    --cell: 34px;
+    --cell-gap: 3px;
+  }
+
+  .hero {
+    padding-bottom: 58px;
+  }
+
+  .card {
+    padding: 16px 12px;
+  }
+
+  .day-title-wrap p {
+    font-size: 20px;
+  }
+
+  /* accanto ai pulsanti non c'è posto per la linea di quota */
+  .card-head h2::after {
+    display: none;
+  }
+
+  .day-scale {
+    margin: 0 6px 16px;
+  }
+
+  .day-list li {
+    padding: 9px 6px;
+  }
+
+  .day-legend {
+    padding: 0 6px 2px;
+  }
+
+  .day-list .score {
+    font-size: 25px;
+  }
+
+  .mg .cell {
+    font-size: 14px;
+  }
+
+  .tile .value {
+    font-size: 32px;
+  }
+
+  .small-tiles .value {
+    font-size: 24px;
+  }
+}

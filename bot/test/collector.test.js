@@ -221,3 +221,24 @@ test('timestamp Long di protobuf', async () => {
   );
   assert.equal(results[0].ts, 1791040000);
 });
+
+test('segnala i messaggi che sembrano risultati ma non vengono riconosciuti', async () => {
+  const unrecognized = [];
+  const results = [];
+  const collector = new Collector({
+    config: { groupJid: GROUP, timeZone: 'Europe/Zurich', aliasMap: buildAliasMap({}) },
+    onResult: (r) => results.push(r),
+    onUnrecognized: (m) => unrecognized.push(m),
+  });
+  const sock = { user: { id: '41790000000:5@s.whatsapp.net', name: 'Mattia' } };
+  const odd = 'Magnitudle — Size It Up\nNov 15\nRisultato: quasi perfetto\n430';
+
+  await collector.handleMessage(sock, groupMsg(odd));
+  await collector.handleMessage(sock, groupMsg('machsch du?', { id: 'MSG2' }));
+  await collector.handleMessage(sock, groupMsg(RESULT, { id: 'MSG3' }));
+  // negli altri gruppi non si guarda nemmeno
+  await collector.handleMessage(sock, groupMsg(odd, { remoteJid: 'altro@g.us', id: 'MSG4' }));
+
+  assert.deepEqual(unrecognized, [{ player: 'Dani', text: odd, ts: 1791040000, date: '2026-10-03' }]);
+  assert.equal(results.length, 1);
+});

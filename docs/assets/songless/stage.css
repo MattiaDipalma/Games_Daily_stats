@@ -1,0 +1,561 @@
+/* Songless – la pagina come un lettore musicale di notte: nero, un solo verde, l'equalizzatore accanto
+   al titolo e la forma d'onda di una canzone sotto l'intestazione.
+   Caricato solo da songless/index.html, dopo style.css. L'equalizzatore e la forma d'onda li aggiunge
+   stage.js (solo decorazione). Con "riduci movimento" attivo le animazioni si fermano. */
+
+@font-face {
+  font-family: 'Unbounded';
+  font-weight: 500;
+  src: url('../fonts/unbounded-latin-500-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Unbounded';
+  font-weight: 700;
+  src: url('../fonts/unbounded-latin-700-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Unbounded';
+  font-weight: 800;
+  src: url('../fonts/unbounded-latin-800-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+html[data-game='songless'] {
+  --page: #050505;
+  --surface: #101010;
+  --surface-2: #1c1c1c;
+  --text: #ffffff;
+  --text-2: #c4c4c4;
+  --muted: #8e8e8e;
+  --grid: #222222;
+  --axis: #363636;
+  --border: rgba(255, 255, 255, 0.09);
+  --accent: #3ddc84;
+  --accent-ink: #03170b;
+  --glow: transparent;
+  --good: #3ddc84;
+  --bad: #ff6f86;
+  /* testa a testa: verde = vince più spesso, rosa = perde più spesso (distinguibili anche per daltonici) */
+  --div-pos: #2fd673;
+  --div-neg: #e34d85;
+  --div-mid: #1e1e1e;
+  /* dal 60% di verde in su la casella è chiara: testo nero (contrasto sempre ≥ 4.5:1) */
+  --h2h-flip: 60;
+  --ref: #9a9a9a;
+  --radius: 18px;
+  --display: 'Unbounded', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* caselle dei generi: lato e distanza (la colonna delle caselle è larga cinque caselle) */
+  --cell: 30px;
+  --cell-gap: 4px;
+  --cells-w: calc(5 * var(--cell) + 4 * var(--cell-gap));
+}
+
+body {
+  background:
+    radial-gradient(900px 420px at 12% -160px, rgba(61, 220, 132, 0.17), transparent 70%) no-repeat,
+    radial-gradient(700px 320px at 100% -120px, rgba(61, 220, 132, 0.07), transparent 70%) no-repeat,
+    var(--page);
+}
+
+::selection {
+  background: rgba(61, 220, 132, 0.35);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- intestazione: titolo con l'equalizzatore e forma d'onda ---------- */
+
+.tab[aria-current='page'] {
+  background: rgba(61, 220, 132, 0.1);
+  border-color: rgba(61, 220, 132, 0.45);
+}
+
+.hero {
+  padding-top: 30px;
+}
+
+.hero h1 {
+  gap: 0.3em;
+  font-family: var(--display);
+  font-size: clamp(34px, 6.4vw, 60px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.sub {
+  margin-top: 8px;
+}
+
+/* l'equalizzatore prende il posto della nota musicale (lo inserisce stage.js) */
+.eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.085em;
+  height: 0.78em;
+}
+
+.eq i {
+  width: 0.13em;
+  height: 100%;
+  border-radius: 0.065em;
+  background: linear-gradient(180deg, #8dffbd, var(--accent) 55%);
+  transform: scaleY(var(--rest));
+  transform-origin: 50% 100%;
+  animation: eq var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes eq {
+  from {
+    transform: scaleY(0.22);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* la forma d'onda: in grigio tutta la canzone, in verde la parte già suonata */
+.wave {
+  position: relative;
+  height: 58px;
+  margin-top: 22px;
+}
+
+.wave-bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wave-bars i {
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--h);
+  border-radius: 2px;
+  background: #272727;
+}
+
+.wave-bars.on i {
+  background: linear-gradient(180deg, #8dffbd, var(--accent) 45%, #17a85a);
+}
+
+.wave-bars.on {
+  clip-path: inset(0 62% 0 0);
+  /* parte già a un terzo della canzone */
+  animation: play 60s linear -22s infinite;
+}
+
+@keyframes play {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (max-width: 900px) {
+  .wave-bars i:nth-child(n + 101) {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .wave {
+    height: 44px;
+    margin-top: 16px;
+  }
+
+  .wave-bars i:nth-child(n + 65) {
+    display: none;
+  }
+}
+
+/* ---------- card e titoli ---------- */
+
+.card,
+.tile,
+dialog {
+  background: linear-gradient(180deg, #141414, #0e0e0e);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.card {
+  padding: 22px;
+  margin: 18px 0;
+}
+
+.card > h2,
+.card-head h2,
+dialog h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* tre barrette verdi davanti a ogni titolo */
+.card > h2::before,
+.card-head h2::before,
+dialog h3::before {
+  content: '';
+  flex: none;
+  width: 13px;
+  height: 12px;
+  background:
+    linear-gradient(var(--accent), var(--accent)) 0 100% / 3px 50% no-repeat,
+    linear-gradient(var(--accent), var(--accent)) 5px 100% / 3px 100% no-repeat,
+    linear-gradient(var(--accent), var(--accent)) 10px 100% / 3px 70% no-repeat;
+}
+
+.card > h2 {
+  margin-bottom: 14px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  background: #171717;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: #171717;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- puzzle del giorno: "in riproduzione" ---------- */
+
+.day {
+  background:
+    radial-gradient(520px 200px at 50% -110px, rgba(61, 220, 132, 0.13), transparent 70%) no-repeat,
+    linear-gradient(180deg, #141414, #0e0e0e);
+}
+
+/* sotto il titolo, la barra di avanzamento: dove si trova questo puzzle nello storico */
+.day-head {
+  position: relative;
+  margin-bottom: 16px;
+  padding-bottom: 20px;
+}
+
+.day-head::before,
+.day-head::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+}
+
+.day-head::before {
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--accent) calc(var(--day-pos, 1) * 100%),
+    var(--grid) calc(var(--day-pos, 1) * 100%)
+  );
+}
+
+.day-head::after {
+  left: calc(var(--day-pos, 1) * (100% - 11px));
+  bottom: -4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(61, 220, 132, 0.25);
+}
+
+.day-title-wrap h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.day-list li {
+  padding: 10px;
+  border-top-color: #1b1b1b;
+  border-radius: 12px;
+}
+
+/* il primo del giorno ha la riga accesa */
+.day-list li.first {
+  border-top-color: transparent;
+  background: linear-gradient(90deg, rgba(61, 220, 132, 0.14), rgba(61, 220, 132, 0.03) 70%, transparent);
+}
+
+.day-list li.first + li {
+  border-top-color: transparent;
+}
+
+.day-list .rank {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.day-list .rank.medal {
+  font-size: 22px;
+}
+
+/* l'alone delle caselle più chiare non va tagliato */
+.day-list .grid {
+  overflow: visible;
+}
+
+.day-list .score {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.day-legend {
+  padding: 0 10px 2px;
+}
+
+/* caselle dei generi: un tasto per genere, più chiaro = canzone trovata prima */
+.mini {
+  gap: var(--cell-gap);
+}
+
+.sg .cell {
+  width: var(--cell);
+  min-width: 0;
+  height: var(--cell);
+  padding: 0;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sg .t1 {
+  box-shadow: 0 0 14px rgba(74, 222, 128, 0.4);
+}
+
+.sg .miss {
+  background: #171717;
+  box-shadow: inset 0 0 0 1px #2a2a2a;
+  font-weight: 400;
+}
+
+.sg.lg .cell {
+  height: 14px;
+  border-radius: 0;
+}
+
+/* schermi larghi: le caselle in una colonna a sé, allineate sotto i nomi dei generi */
+@media (min-width: 701px) {
+  .day-list li,
+  .day-legend {
+    grid-template-columns: 36px minmax(0, 1fr) var(--cells-w) 112px;
+    column-gap: 16px;
+  }
+
+  .day-list li {
+    grid-template-areas:
+      'rank name grid score'
+      'rank name grid delta';
+  }
+
+  .day-legend {
+    grid-template-areas: '. . grid .';
+  }
+
+  .day-list .grid {
+    grid-row: 1 / span 2;
+    overflow: visible;
+  }
+
+  .day-list .name {
+    grid-row: 1 / span 2;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  html[data-game='songless'] {
+    --cell: 26px;
+  }
+
+  .sg .cell {
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  .sg.lg .cell {
+    font-size: 8px;
+  }
+
+  .h2h td div {
+    border-radius: 5px;
+  }
+}
+
+/* ---------- filtri, riquadri ---------- */
+
+.seg {
+  background: #161616;
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.seg button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: none;
+}
+
+.tile {
+  padding: 16px 18px;
+}
+
+.tile .label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tile .value {
+  margin-top: 6px;
+  font-family: var(--display);
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.small-tiles .tile {
+  background: #0a0a0a;
+}
+
+.small-tiles .value {
+  font-size: 19px;
+}
+
+/* ---------- tabelle ---------- */
+
+.lb th {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lb th button {
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.lb th[aria-sort] button {
+  color: var(--accent);
+}
+
+.lb tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* la media anche come barra: 500 punti = barra piena */
+.meter {
+  display: inline-block;
+}
+
+/* numeri larghi uguali, così le barre partono tutte dallo stesso punto */
+.avg-num {
+  display: inline-block;
+  min-width: 3.3em;
+}
+
+.meter i,
+.hits-bar i {
+  background: linear-gradient(90deg, #17a85a, var(--accent));
+}
+
+.hits-pct {
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* testa a testa: sulle caselle più chiare il testo diventa scuro */
+.h2h td div {
+  border-radius: 8px;
+}
+
+.h2h td div.win.hi {
+  color: #000000;
+  font-weight: 600;
+}
+
+dialog {
+  border-radius: 20px;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+#pd-title {
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 16px 12px;
+  }
+
+  .day-list li {
+    padding: 10px 6px;
+  }
+
+  .day-legend {
+    padding: 0 6px 2px;
+  }
+
+  .day-title-wrap h2 {
+    font-size: 18px;
+  }
+
+  .day-list .score {
+    font-size: 18px;
+  }
+
+  .tile .value {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq i,
+  .wave-bars.on {
+    animation: none;
+  }
+}
