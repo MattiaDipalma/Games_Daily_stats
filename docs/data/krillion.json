@@ -1,12 +1,13 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-25T08:46:16.547Z",
+  "updatedAt": "2026-11-25T09:15:41.072Z",
   "results": [
     {"puzzle":133,"player":"Dominic","score":295,"date":"2026-11-25","ts":1795584981,"grid":"🏮⬛🫧🏮⬛🏮🐟","msgId":"3AAD1ABED62B4B448651"},
     {"puzzle":133,"player":"Nils Geigy","score":460,"date":"2026-11-25","ts":1795588192,"grid":"🏮🦑🐟🏮🏮🏮🐟","msgId":"3A187CBBACC78A900E02"},
     {"puzzle":133,"player":"flo","score":435,"date":"2026-11-25","ts":1795592310,"grid":"🏮🦑⬛🏮🦑🏮🦑","msgId":"3EB02B64EE132BEC7DE73A"},
     {"puzzle":133,"player":"Pierin","score":330,"date":"2026-11-25","ts":1795592992,"grid":"🦑🦑🐟🏮⬛🏮🫧","msgId":"3AFC199946E04B17908F"},
     {"puzzle":133,"player":"+41∙∙∙∙∙∙∙90","score":485,"date":"2026-11-25","ts":1795593601,"grid":"🏮🏮🐟🏮🏮🏮🐟","msgId":"3B2A62B8BF3DF811F833"},
+    {"puzzle":133,"player":"Max","score":330,"date":"2026-11-25","ts":1795598080,"grid":"🦑🦑🫧🏮🐟🏮⬛","msgId":"3EB0738252F6D8963087F5"},
     {"puzzle":132,"player":"Dominic","score":385,"date":"2026-11-24","ts":1795498738,"grid":"🏮🫧🏮🦑⬛🏮🦑","msgId":"3A2BAC6690F6950BB6B1"},
     {"puzzle":132,"player":"Nils Geigy","score":470,"date":"2026-11-24","ts":1795501542,"grid":"🏮🦑🦑🏮🦑🦑🦑","msgId":"3A8825687B4332DBBA30"},
     {"puzzle":132,"player":"Pierin","score":335,"date":"2026-11-24","ts":1795504731,"grid":"🦑🦑🦑🏮⬛🦑🫧","msgId":"3AB32A53C83A86FD0808"},
