@@ -1,7 +1,8 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-24T19:42:14.064Z",
+  "updatedAt": "2026-11-25T06:17:53.426Z",
   "results": [
+    {"puzzle":454,"player":"Dominic","score":70,"date":"2026-11-25","ts":1795585125,"grid":"⬜⬜🟨🟨🟩 [Top Hits]\n⬜⬜⬜⬜⬜ [Pop]\n⬜⬜🟩⬛⬛ [Rock]\n⬜⬜⬜⬜⬜ [Hip Hop]\n⬜⬜⬜⬜⬜ [EDM]","msgId":"3AAE3E72C5BA41783C23"},
     {"puzzle":453,"player":"Dominic","score":40,"date":"2026-11-24","ts":1795498922,"grid":"🟥⬜⬜🟩⬛ [Top Hits]\n⬜⬜⬜⬜⬜ [Pop]\n⬜⬜⬜⬜🟩 [Rock]\n⬜⬜⬜⬜🟥 [Hip Hop]\n⬜⬜⬜🟥⬜ [EDM]","msgId":"3AC25A07BA76DE6D3BA1"},
     {"puzzle":453,"player":"+41∙∙∙∙∙∙∙77","score":85,"date":"2026-11-24","ts":1795501197,"grid":"⬜⬜⬜⬜⬜ [Top Hits]\n⬜⬜⬜⬜⬜ [Pop]\n⬜🟩⬛⬛⬛ [Rock]\n⬜⬜🟥⬜🟥 [Hip Hop]\n⬜⬜⬜🟥🟥 [EDM]","msgId":"3A68242AC715D99F254A"},
     {"puzzle":453,"player":"+41∙∙∙∙∙∙∙90","score":110,"date":"2026-11-24","ts":1795505325,"grid":"🟩⬛⬛⬛⬛ [Top Hits]\n🟥⬜⬜⬜🟥 [Pop]\n⬜⬜⬜🟥🟩 [Rock]\n⬜⬜⬜🟥🟥 [Hip Hop]\n⬜⬜🟥🟥🟥 [EDM]","msgId":"3B2FEDD2E5E38D3273CF"},
