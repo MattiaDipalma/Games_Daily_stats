@@ -1,9 +1,11 @@
 /* Games Daily – stile comune. Ogni gioco ha il suo tema (html[data-game]):
-   Krillion blu scuro, Songless nero, Magnitudle rosso. La home è grigio scuro.
+   Krillion blu scuro, Songless nero, Magnitudle rosso, Noillirk verde-acqua scuro e giallo.
+   La home è grigio scuro.
    Le pagine dei giochi aggiungono sopra il loro tema: krillion/sea.css (fondale marino),
-   songless/stage.css (palco e forma d'onda) e magnitudle/ruler.css (righello).
+   songless/stage.css (palco e forma d'onda), magnitudle/ruler.css (righello) e
+   noillirk/forest.css (il bosco).
    I colori dei giocatori (--s1…--s25) sono la palette categoriale per sfondi scuri,
-   verificata (contrasto ≥ 3:1 e distinguibili anche per daltonici) su tutti e tre i temi. */
+   verificata (contrasto ≥ 3:1 e distinguibili anche per daltonici) su tutti i temi. */
 
 :root {
   color-scheme: dark;
@@ -111,6 +113,28 @@
   /* manche di Magnitudle: più punti = rosso più acceso (testo bianco ≥ 4.5:1) */
   --bar: #e0303c;
   --ref: #e8b0b3;
+}
+
+/* Noillirk: verde-acqua scuro, crema e giallo, come noillirk.com al buio */
+[data-game='noillirk'] {
+  --page: #0c1a1c;
+  --surface: #16292b;
+  --surface-2: #1f3a3d;
+  --text: #f4ebd7;
+  --text-2: #d2d6c6;
+  --muted: #9fb3ad;
+  --grid: #233d40;
+  --axis: #36565a;
+  --border: rgba(244, 235, 215, 0.15);
+  --accent: #f2c14e;
+  --glow: rgba(95, 227, 192, 0.3);
+  --good: #5fe3c0;
+  --bad: #ff9478;
+  /* testa a testa: il testo crema resta ≥ 4.5:1 su tutta la scala (fino all'80% del colore) */
+  --div-pos: #23826b;
+  --div-neg: #b84f39;
+  --div-mid: #1f3a3d;
+  --ref: #a9bdb6;
 }
 
 * {
@@ -441,6 +465,15 @@ select {
   text-align: right;
 }
 
+/* Noillirk: la quota raggiunta accanto ai punti (nel puzzle del giorno e nello storico) */
+.alt {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .day-list .delta {
   grid-area: delta;
   text-align: right;
@@ -534,8 +567,50 @@ select {
   background: color-mix(in oklab, var(--bar) var(--fill), var(--surface-2));
 }
 
-/* Intestazione delle caselle (i generi di Songless, le manche di Magnitudle): stessa griglia
-   delle righe della lista, così ogni voce sta sopra la sua casella. */
+/* Noillirk: un cerchio per domanda, col colore del cerchio del messaggio (giallo = risposta n. 1,
+   arancio, viola, blu, bianco = fuori dal tabellone, vuoto = saltata). L'emoji resta nel testo. */
+.mini.nk {
+  gap: 3px;
+}
+
+.mini.nk .cell {
+  min-width: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0;
+  color: transparent;
+  background: var(--nk, transparent);
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.nk .nk-b4 {
+  --nk: #ffc83d;
+}
+
+.nk .nk-b3 {
+  --nk: #ff7a59;
+}
+
+.nk .nk-b2 {
+  --nk: #9c7bff;
+}
+
+.nk .nk-b1 {
+  --nk: #3fb6e0;
+}
+
+.nk .nk-b0 {
+  --nk: #ece6d6;
+}
+
+.mini.nk .nk-pass {
+  box-shadow: inset 0 0 0 2px var(--axis);
+}
+
+/* Intestazione delle caselle (i generi di Songless, le manche di Magnitudle, i pesi di Noillirk):
+   stessa griglia delle righe della lista, così ogni voce sta sopra la sua casella. */
 .day-legend {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr) auto;
@@ -1396,9 +1471,10 @@ dialog::backdrop {
   margin: 6px 0 0;
 }
 
+/* un riquadro per gioco: quattro in fila, due per riga sugli schermi medi, uno sotto l'altro sui telefoni */
 .games {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin: 18px 0 8px;
 }
@@ -1456,6 +1532,13 @@ dialog::backdrop {
   margin: 0;
   color: var(--text-2);
   font-size: 13px;
+}
+
+/* quattro riquadri in fila: la data può andare su due righe, e i podi partono tutti alla stessa altezza */
+@media (min-width: 981px) {
+  .gc-puzzle {
+    min-height: 3em;
+  }
 }
 
 .gc-podium {
@@ -1558,7 +1641,7 @@ dialog::backdrop {
 }
 
 /* Su schermi stretti ogni giocatore va su due righe: nome e media generale sopra,
-   i tre giochi e le partite sotto, allineati alle intestazioni. */
+   i giochi e le partite sotto, allineati alle intestazioni. */
 @media (max-width: 700px) {
   #overall,
   #overall thead,
@@ -1566,17 +1649,40 @@ dialog::backdrop {
     display: block;
   }
 
+  /* una colonna per ogni gioco che conta (g1, g2, … in home.js), più le partite */
   #overall tr {
     display: grid;
-    grid-template-columns: 24px repeat(4, minmax(0, 1fr));
+    grid-template-columns: 24px repeat(5, minmax(0, 1fr));
     grid-template-areas:
-      'pos name name name avg'
-      'pos krillion songless magnitudle games';
+      'pos name name name name avg'
+      'pos g1 g2 g3 g4 games';
     column-gap: 6px;
     row-gap: 2px;
     align-items: baseline;
     padding: 8px 0;
     border-top: 1px solid var(--grid);
+  }
+
+  /* un gioco in cui nessuno è ancora in classifica non lascia una colonna vuota */
+  #overall[data-games='3'] tr {
+    grid-template-columns: 24px repeat(4, minmax(0, 1fr));
+    grid-template-areas:
+      'pos name name name avg'
+      'pos g1 g2 g3 games';
+  }
+
+  #overall[data-games='2'] tr {
+    grid-template-columns: 24px repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      'pos name name avg'
+      'pos g1 g2 games';
+  }
+
+  #overall[data-games='1'] tr {
+    grid-template-columns: 24px repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'pos name avg'
+      'pos g1 games';
   }
 
   #overall thead tr {
@@ -1613,16 +1719,20 @@ dialog::backdrop {
     grid-area: avg;
   }
 
-  #overall .c-krillion {
-    grid-area: krillion;
+  #overall .g1 {
+    grid-area: g1;
   }
 
-  #overall .c-songless {
-    grid-area: songless;
+  #overall .g2 {
+    grid-area: g2;
   }
 
-  #overall .c-magnitudle {
-    grid-area: magnitudle;
+  #overall .g3 {
+    grid-area: g3;
+  }
+
+  #overall .g4 {
+    grid-area: g4;
   }
 
   #overall .c-games {
@@ -1655,7 +1765,13 @@ dialog::backdrop {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 980px) {
+  .games {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
   .games {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1693,6 +1809,28 @@ dialog::backdrop {
     justify-content: center;
     padding: 6px 4px;
     font-size: 13px;
+  }
+}
+
+/* sui telefoni le quattro linguette stanno in una riga: l'emoji sopra il nome */
+@media (max-width: 520px) {
+  .tabs {
+    gap: 2px;
+  }
+
+  .tab {
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    padding: 5px 2px;
+    border-radius: 12px;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .tab > span {
+    font-size: 16px;
+    line-height: 1;
   }
 }
 
@@ -1752,6 +1890,16 @@ dialog::backdrop {
 
   .mg .cell {
     min-width: 26px;
+  }
+
+  /* Noillirk: dieci cerchi più piccoli, così stanno accanto alla quota anche sui telefoni */
+  .mini.nk {
+    gap: 2px;
+  }
+
+  .mini.nk .cell {
+    width: 14px;
+    height: 14px;
   }
 }
 

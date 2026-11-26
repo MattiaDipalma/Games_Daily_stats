@@ -1,4 +1,4 @@
-// Games Daily – pagina di un gioco (Krillion, Songless o Magnitudle).
+// Games Daily – pagina di un gioco (Krillion, Songless, Magnitudle o Noillirk).
 // Il gioco è scritto in <html data-game="...">. Aggiungi ?demo all'indirizzo per vedere dati di esempio.
 
 import {
@@ -9,6 +9,7 @@ import {
   colorOf,
   el,
   fmt,
+  fmtAltitude,
   fmtDate,
   fmtLongDate,
   fmtUpdated,
@@ -25,6 +26,8 @@ import {
   locale,
   minGames,
   mountShell,
+  noillirkAltitude,
+  noillirkZone,
   periodRange,
   playerStats,
   prefs,
@@ -35,7 +38,7 @@ import {
   sortStats,
   svg,
   t,
-} from './core.js?v=4';
+} from './core.js?v=5';
 
 const id = document.documentElement.dataset.game;
 const def = GAMES[id];
@@ -192,6 +195,9 @@ function tile(label, value, hint) {
 
 const label = (model) => (x, long) => (long ? puzzleLongLabel(model, x) : puzzleLabel(model, x));
 
+// classe dell'intestazione delle caselle del puzzle del giorno, la stessa delle caselle (gridNode)
+const LEGEND_CLASS = { songless: 'sg', magnitudle: 'mg', noillirk: 'nk' };
+
 // ---------------------------------------------------------------------------
 // Puzzle del giorno (tutte le partite, anche quelle del vecchio gruppo)
 
@@ -212,13 +218,13 @@ function renderDay() {
     .style.setProperty('--day-pos', list.length > 1 ? (idx / (list.length - 1)).toFixed(4) : '1');
   renderScale(p);
 
-  // intestazione delle caselle (i generi di Songless, le manche di Magnitudle)
+  // intestazione delle caselle (i generi di Songless, le manche di Magnitudle, i pesi di Noillirk)
   const legend = gridLegend(id, p.results);
   $('#day-legend').hidden = !legend.length;
   $('#day-legend').replaceChildren(
     el(
       'span',
-      { class: `mini lg ${id === 'songless' ? 'sg' : 'mg'}` },
+      { class: `mini lg ${LEGEND_CLASS[id] ?? ''}` },
       legend.map((l) => el('span', { class: 'cell', title: l.full }, l.short)),
     ),
   );
@@ -253,6 +259,7 @@ function renderDay() {
           fmt(r.score),
           // Krillion: la profondità raggiunta, 10 m per punto (come su krillion.io)
           id === 'krillion' ? el('small', { class: 'depth' }, `−${fmt(r.score * 10)} m`) : null,
+          id === 'noillirk' ? altitudeNode(r.score) : null,
         ),
         el('span', { class: 'grid' }, gridNode(id, r)),
         delta,
@@ -272,7 +279,20 @@ function renderDay() {
   $('#day-missing').textContent = missing.length
     ? t(missing.length === 1 ? 'missing' : 'missingMany', { names: missing.join(', ') })
     : '';
-  $('#scoring').textContent = id === 'krillion' ? '' : t(`scoring_${id}`);
+  $('#scoring').textContent = id === 'krillion' ? '' : t(`scoring_${id}`, { max: fmt(def.max) });
+}
+
+/**
+ * Noillirk: la quota raggiunta con quei punti, come nel messaggio ("5’375 m"). La zona della salita
+ * ("Inside the Storm") è nel tooltip e in data-zone, così il tema decide se mostrarla.
+ */
+function altitudeNode(score) {
+  const zone = noillirkZone(score).name;
+  return el(
+    'small',
+    { class: 'alt', title: t('nkAltitude', { zone }), 'data-zone': zone },
+    fmtAltitude(noillirkAltitude(score)),
+  );
 }
 
 /**
@@ -789,7 +809,7 @@ function openPlayer(name) {
         {},
         def.numbered ? el('td', { class: 'left' }, `#${r.puzzle}`) : null,
         el('td', { class: 'left' }, fmtDate(p.date)),
-        el('td', {}, fmt(r.score)),
+        el('td', {}, fmt(r.score), id === 'noillirk' ? altitudeNode(r.score) : null),
         el('td', {}, `${p.rank.get(name)}/${p.results.length}`),
         el('td', { class: 'grid-cell' }, gridNode(id, r)),
       ),

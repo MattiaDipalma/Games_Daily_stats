@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Bot WhatsApp: legge i risultati di Krillion, Songless e Magnitudle dal gruppo
+// Bot WhatsApp: legge i risultati di Krillion, Songless, Magnitudle e Noillirk dal gruppo
 // e aggiorna docs/data/<gioco>.json.
 //
 // Si collega al tuo account come "dispositivo collegato" (come WhatsApp Web),

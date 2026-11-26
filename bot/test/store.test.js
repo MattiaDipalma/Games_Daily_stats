@@ -129,6 +129,7 @@ test('createStores: un file per gioco', () => {
       ['krillion', 'docs/data/krillion.json'],
       ['songless', 'docs/data/songless.json'],
       ['magnitudle', 'docs/data/magnitudle.json'],
+      ['noillirk', 'docs/data/noillirk.json'],
     ],
   );
   const local = createStores(config, { local: true });

@@ -242,3 +242,28 @@ test('segnala i messaggi che sembrano risultati ma non vengono riconosciuti', as
   assert.deepEqual(unrecognized, [{ player: 'Dani', text: odd, ts: 1791040000, date: '2026-10-03' }]);
   assert.equal(results.length, 1);
 });
+
+test('Noillirk dal gruppo: punti dai cerchi; la versione Krillion-style non conta e non viene segnalata', async () => {
+  const unrecognized = [];
+  const results = [];
+  const collector = new Collector({
+    config: { groupJid: GROUP, timeZone: 'Europe/Zurich', aliasMap: buildAliasMap({}) },
+    onResult: (r) => results.push(r),
+    onUnrecognized: (m) => unrecognized.push(m),
+  });
+  const sock = { user: { id: '41790000000:5@s.whatsapp.net', name: 'Mattia' } };
+  const grid = '🟡🟠🟣🟠🟠⚫⚫🟠🟡🔵';
+  await collector.handleMessage(
+    sock,
+    groupMsg(`Noillirk #37 · 5,375m\nInside the Storm\n${grid}\nCrowd Whisperer`, {}, { pushName: 'Nils' }),
+  );
+  await collector.handleMessage(
+    sock,
+    groupMsg(`Noillirk #37 · Krillion-style · 2,300m\nOver the Valley\n${grid}\nSide Trail`, { id: 'MSG2' }),
+  );
+  assert.deepEqual(
+    results.map((r) => [r.game, r.puzzle, r.score, r.grid, r.player, r.date, r.msgId]),
+    [['noillirk', 37, 1300, grid, 'Nils', '2026-10-03', 'MSG1']],
+  );
+  assert.deepEqual(unrecognized, []);
+});

@@ -1,5 +1,5 @@
 // Games Daily – home: un riquadro per gioco, con il podio dell'ultimo puzzle e chi è in testa,
-// e sotto la classifica generale dei tre giochi (per posizione media).
+// e sotto la classifica generale di tutti i giochi (per posizione media).
 
 import {
   GAMES,
@@ -20,7 +20,7 @@ import {
   periodRange,
   sortStats,
   t,
-} from './core.js?v=4';
+} from './core.js?v=5';
 
 const demo = new URLSearchParams(location.search).has('demo');
 const shell = mountShell({ page: 'home', base: '', onLang: render });
@@ -92,7 +92,8 @@ function card(id) {
         { class: 'gc-leader small' },
         stats.length
           ? [`🏆 ${t('homeLeader')}: `, el('strong', {}, stats[0].name), ` · ${fmt(stats[0].avg, 1)}`]
-          : t('homeSeasonEmpty'),
+          : // Krillion appena ripartito, oppure (per esempio in un gioco nuovo) nessuno ha ancora abbastanza partite
+            t(g.seasonStart && !season.results.length ? 'homeSeasonEmpty' : 'homeNoLeader'),
       ),
     );
   }
@@ -110,17 +111,33 @@ function card(id) {
   );
 }
 
-// Classifica generale: chi è nella classifica di tutti e tre i giochi (per Krillion quella ripartita da
-// zero), ordinato per posizione media. Compare quando tutti e tre i giochi sono caricati.
+// Classifica generale: chi è nella classifica di tutti i giochi (per Krillion quella ripartita da
+// zero), ordinato per posizione media. Compare quando tutti i giochi sono caricati.
+// Un gioco in cui nessuno è ancora in classifica (per esempio appena aggiunto) conta solo da quando
+// qualcuno ci entra: così non svuota la classifica generale, e la nota sotto lo dice.
 function renderOverall() {
   const ready = GAME_IDS.every((id) => loaded[id] && !loaded[id].error);
   $('#overall-card').hidden = !ready;
   if (!ready) return;
-  const stats = overallStats(Object.fromEntries(GAME_IDS.map((id) => [id, loaded[id].season])));
+  const season = (id) => loaded[id].season;
+  const ids = GAME_IDS.filter((id) => leaderboardStats(season(id), periodRange(season(id), 'all')).length);
+  const waiting = GAME_IDS.filter((id) => !ids.includes(id));
+  const stats = ids.length ? overallStats(Object.fromEntries(ids.map((id) => [id, season(id)]))) : [];
   const table = $('#overall');
   table.hidden = !stats.length;
+  // quanti giochi contano: sui telefoni la tabella ha una colonna per gioco (g1, g2, … in style.css)
+  table.dataset.games = String(ids.length);
   $('#overall-empty').textContent = stats.length ? '' : t('overallEmpty');
-  $('#overall-note').textContent = t('overallNote', LEADERBOARD_RULE);
+  $('#overall-note').textContent = [
+    t('overallNote', LEADERBOARD_RULE),
+    waiting.length && ids.length
+      ? t(waiting.length === 1 ? 'overallWaiting' : 'overallWaitingMany', {
+          games: waiting.map((id) => GAMES[id].name).join(', '),
+        })
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const head = el(
     'tr',
@@ -129,10 +146,10 @@ function renderOverall() {
     el('th', { class: 'left c-name', scope: 'col' }, t('colPlayer')),
     el('th', { class: 'c-avg', scope: 'col' }, t('colAvgRank')),
     // ogni colonna di gioco col colore del suo gioco (data-game)
-    GAME_IDS.map((id) =>
+    ids.map((id, n) =>
       el(
         'th',
-        { class: `c-game c-${id}`, scope: 'col', 'data-game': id },
+        { class: `c-game c-${id} g${n + 1}`, scope: 'col', 'data-game': id },
         el('span', { 'aria-hidden': 'true' }, GAMES[id].emoji),
         el('span', { class: 'g-name' }, ` ${GAMES[id].name}`),
       ),
@@ -146,11 +163,11 @@ function renderOverall() {
       el('td', { class: 'pos' }, i < 3 && stats.length > 1 ? MEDALS[i] : i + 1),
       el('td', { class: 'left c-name' }, s.name),
       el('td', { class: 'c-avg' }, fmt(s.avgRank, 2)),
-      GAME_IDS.map((id) =>
+      ids.map((id, n) =>
         el(
           'td',
           {
-            class: `c-game c-${id}`,
+            class: `c-game c-${id} g${n + 1}`,
             title: t('overallTip', { game: GAMES[id].name, n: fmt(s.byGame[id].games) }),
           },
           fmt(s.byGame[id].avgRank, 2),

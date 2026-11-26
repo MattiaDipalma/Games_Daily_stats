@@ -1,0 +1,794 @@
+/* Noillirk – i pannelli nello stile di noillirk.com: verde-acqua scuro, testo crema, etichette gialle
+   maiuscole, forme da giocattolo con il bordo d'inchiostro e l'ombra piena. Caricato dopo forest.css
+   (che definisce caratteri e colori); i numeri sono in Jersey 10, chiari a ogni dimensione. */
+
+/* ---------- navigazione: pillole scure sopra le foglie ---------- */
+
+.brand,
+.tabs,
+.lang select {
+  border: 2px solid #111;
+  background: rgba(10, 20, 21, 0.86);
+  box-shadow: 2px 3px 0 #111;
+}
+
+.brand {
+  padding: 5px 14px;
+  border-radius: 999px;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.brand:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 2px 4px 0 #111;
+}
+
+.tabs {
+  flex: 0 1 auto;
+  margin: 0 auto;
+  padding: 4px;
+  border-radius: 999px;
+}
+
+.tab {
+  font-weight: 700;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.tab:hover {
+  background: rgba(244, 235, 215, 0.1);
+}
+
+.tab[aria-current='page'] {
+  background: #ffd34d;
+  border-color: #111;
+  color: #111;
+  box-shadow: 0 3px 0 var(--yellow-edge);
+}
+
+.tab[aria-current='page']:hover {
+  background: #ffdc6e;
+  transform: translateY(-1px);
+}
+
+.lang select {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font: 700 13px var(--font);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.lang select:hover {
+  background: var(--surface-2);
+}
+
+/* ---------- pannelli: verde-acqua scuro, bordo d'inchiostro e ombra piena ---------- */
+
+.status {
+  display: table;
+  padding: 6px 14px;
+  border: 2px solid #111;
+  border-radius: 14px;
+  background: rgba(10, 20, 21, 0.88);
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.card,
+.tile {
+  background: var(--panel);
+  border: 2px solid var(--line);
+}
+
+.card {
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(244, 235, 215, 0.06),
+    4px 4px 0 var(--lift),
+    0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card > h2,
+.card-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 800 23px/1.1 var(--display);
+  color: var(--text);
+}
+
+/* un palloncino accanto a ogni titolo */
+.forest-ready .card > h2::before,
+.forest-ready .card-head h2::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 20px;
+  margin-top: 2px;
+  background: var(--spr-balloon, var(--spr-nk4)) 0 0 / 100% 100% no-repeat;
+}
+
+#lb-title {
+  --spr-balloon: var(--spr-balloonV);
+}
+
+#trend-title {
+  --spr-balloon: var(--spr-balloonR);
+}
+
+#h2h-title,
+#genres-title {
+  --spr-balloon: var(--spr-balloonT);
+}
+
+.empty-note {
+  border: 2px dashed var(--axis);
+  border-radius: 16px;
+  background: rgba(10, 20, 21, 0.5);
+}
+
+/* pulsanti gialli e grossi, con lo spessore sotto (come "Play" su noillirk.com) */
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border: 2px solid #111;
+  border-radius: 14px;
+  background: #ffd34d;
+  color: #111;
+  font: 700 24px/1 var(--font);
+  box-shadow: 0 4px 0 var(--yellow-edge);
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s,
+    background-color 0.15s;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: #ffdc6e;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 var(--yellow-edge);
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--yellow-edge);
+}
+
+.icon-btn:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: 0 4px 0 var(--ink);
+  opacity: 0.55;
+}
+
+/* ---------- puzzle del giorno ---------- */
+
+.day-title-wrap h2 {
+  font: 400 34px/1 var(--digits);
+  color: var(--accent);
+  text-shadow: 0 3px 0 #111;
+}
+
+.day-title-wrap p {
+  margin-top: 6px;
+  font: 700 11px/1.4 var(--font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* a che punto dello storico siamo: una barretta turchese */
+.day-title-wrap::after {
+  content: '';
+  display: block;
+  width: 120px;
+  height: 10px;
+  margin: 10px auto 0;
+  border: 2px solid #111;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--teal) calc(var(--day-pos, 1) * 100%), var(--ink) 0);
+}
+
+/* l'intestazione dei pesi ha lo stesso margine laterale delle righe: ogni peso sta sopra il suo cerchio */
+.day-legend {
+  padding: 0 8px 4px;
+}
+
+.day-list li {
+  padding: 12px 8px;
+  border-top: 2px solid var(--grid);
+  border-radius: 14px;
+  transition: background-color 0.2s;
+}
+
+.day-list li:hover {
+  background: rgba(95, 227, 192, 0.05);
+}
+
+.day-list li.first {
+  border-top-color: transparent;
+  background: linear-gradient(90deg, rgba(255, 200, 61, 0.15), rgba(255, 200, 61, 0.02) 75%);
+}
+
+.day-list li.first + li {
+  border-top-color: transparent;
+}
+
+.day-list .rank {
+  font: 400 28px/1 var(--digits);
+  color: var(--muted);
+}
+
+.day-list .name {
+  font-size: 16px;
+}
+
+.player-btn {
+  font-weight: 700;
+  transition: color 0.15s;
+}
+
+.player-btn:hover {
+  color: #fff1a8;
+}
+
+.day-list .score {
+  font: 400 38px/0.9 var(--digits);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* la quota raggiunta, come un altimetro: "↑ 5’375 m" */
+.alt {
+  font: 700 12px/1 var(--font);
+  letter-spacing: 0.02em;
+  color: var(--teal);
+}
+
+.alt::before {
+  content: '↑ ';
+}
+
+.day-list .delta {
+  font-weight: 700;
+}
+
+#day-missing {
+  font-size: 13px;
+}
+
+.scoring {
+  border-top: 2px dashed var(--grid);
+  font-size: 12.5px;
+}
+
+/* i cerchi delle risposte in pixel art (senza forest.js restano i cerchi di style.css);
+   l'intestazione con i pesi ha le stesse caselle, così ogni peso sta sopra il suo cerchio */
+.forest-ready .mini.nk {
+  gap: 3px;
+}
+
+.forest-ready .mini.nk .cell {
+  width: 21px;
+  height: 21px;
+  border-radius: 0;
+  box-shadow: none;
+  background: 0 0 / 100% 100% no-repeat;
+  transition: transform 0.15s;
+}
+
+.forest-ready .mini.nk .nk-b4 {
+  background-image: var(--spr-nk4);
+}
+
+.forest-ready .mini.nk .nk-b3 {
+  background-image: var(--spr-nk3);
+}
+
+.forest-ready .mini.nk .nk-b2 {
+  background-image: var(--spr-nk2);
+}
+
+.forest-ready .mini.nk .nk-b1 {
+  background-image: var(--spr-nk1);
+}
+
+.forest-ready .mini.nk .nk-b0 {
+  background-image: var(--spr-nk0);
+}
+
+.forest-ready .mini.nk .nk-pass {
+  background-image: var(--spr-nkp);
+}
+
+.forest-ready .mini.nk [class*='nk-']:hover {
+  transform: translateY(-2px);
+}
+
+.forest-ready .mini.lg.nk .cell {
+  height: 16px;
+  font: 400 13px/1 var(--digits);
+  letter-spacing: 0;
+  color: var(--text-2);
+}
+
+/* nello storico della scheda giocatore i cerchi restano piccoli */
+#pd-history .mini.nk .cell {
+  width: 14px;
+  height: 14px;
+}
+
+#pd-history .mini.nk {
+  gap: 2px;
+}
+
+/* ---------- filtri e riquadri ---------- */
+
+/* il periodo come la barra a pillole di noillirk.com */
+.filters {
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px 6px 6px 16px;
+  border: 2px solid #111;
+  border-radius: 22px;
+  background: rgba(10, 20, 21, 0.9);
+  box-shadow: 2px 3px 0 #111;
+}
+
+#period-label {
+  font: 700 11px/1 var(--font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.seg {
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--ink);
+}
+
+.filters .seg {
+  padding: 0;
+  background: none;
+}
+
+.seg button {
+  padding: 6px 14px;
+  font-weight: 700;
+  font-size: 13px;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.seg button:hover {
+  background: rgba(244, 235, 215, 0.08);
+  color: var(--text);
+}
+
+.seg button[aria-pressed='true'] {
+  background: #ffd34d;
+  color: #111;
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--yellow-edge);
+}
+
+.seg button[aria-pressed='true']:hover {
+  background: #ffdc6e;
+}
+
+.seg.small button {
+  padding: 4px 12px;
+  font-size: 12.5px;
+}
+
+.tile {
+  padding: 14px 16px;
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 var(--lift);
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s;
+}
+
+.tiles > .tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 6px 0 var(--lift);
+}
+
+.tile .label {
+  font: 700 11px/1.3 var(--font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.tile .value {
+  margin-top: 8px;
+  font: 400 42px/1 var(--digits);
+  color: var(--text);
+}
+
+.tile .hint {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* ---------- tabelle ---------- */
+
+.lb th,
+.lb td {
+  border-top: 2px solid var(--grid);
+}
+
+.lb th {
+  font: 700 11px/1.3 var(--font);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-top: 0;
+}
+
+.lb th button {
+  transition: color 0.15s;
+}
+
+.lb th button:hover,
+.lb th[aria-sort] button {
+  color: var(--text);
+}
+
+.lb td {
+  font-size: 14px;
+  transition: background-color 0.15s;
+}
+
+.lb .pos {
+  font: 400 20px/1 var(--digits);
+}
+
+.lb td.c-avg {
+  font: 400 24px/1 var(--digits);
+  color: var(--text);
+}
+
+.lb tbody tr:hover td {
+  background: rgba(95, 227, 192, 0.05);
+}
+
+/* la media come una barra in pixel, turchese */
+.meter {
+  display: inline-block;
+  height: 10px;
+  border: 2px solid #111;
+  border-radius: 3px;
+  background: var(--ink);
+}
+
+.meter i {
+  border-radius: 0;
+  background: linear-gradient(180deg, #9af5dc 0 34%, var(--teal) 34% 70%, var(--teal-edge) 70%);
+}
+
+@media (max-width: 700px) {
+  #leaderboard th {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  #leaderboard td.c-avg {
+    font: 400 24px/1 var(--digits);
+  }
+
+  #leaderboard .meter {
+    height: 8px;
+  }
+}
+
+/* ---------- grafici ---------- */
+
+.chip {
+  padding: 4px 12px;
+  border: 2px solid rgba(244, 235, 215, 0.14);
+  background: transparent;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--muted);
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.chip:hover {
+  border-color: rgba(244, 235, 215, 0.35);
+  color: var(--text);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: #111;
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: 2px 2px 0 #111;
+}
+
+.chip:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #111;
+}
+
+.chip.static,
+.chip.static:hover {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+  transform: none;
+  color: var(--text-2);
+}
+
+.chart .end-label {
+  font-weight: 700;
+}
+
+.chart .gridline {
+  stroke-dasharray: 2 4;
+}
+
+.tooltip {
+  border: 2px solid #111;
+  border-radius: 14px;
+  background: #0f2022;
+  box-shadow:
+    3px 3px 0 #111,
+    0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* testo sempre crema: con --div-pos / --div-neg di style.css il contrasto resta ≥ 4.5:1 */
+.h2h td div {
+  border-radius: 8px;
+  transition: transform 0.15s;
+}
+
+.h2h-legend .ramp {
+  height: 10px;
+  border: 2px solid #111;
+}
+
+/* ---------- scheda giocatore ---------- */
+
+dialog {
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow:
+    4px 4px 0 var(--lift),
+    0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+dialog[open] {
+  animation: pop 0.22s ease-out;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+}
+
+dialog::backdrop {
+  background: rgba(4, 12, 12, 0.78);
+}
+
+.pd-close .icon-btn {
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 18px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+
+.pd-close .icon-btn:hover:not(:disabled) {
+  background: #29494c;
+  box-shadow: 0 5px 0 var(--ink);
+}
+
+#pd-title {
+  font: 800 28px/1.15 var(--display);
+  color: var(--text);
+}
+
+dialog h3 {
+  font: 700 11px/1.3 var(--font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.small-tiles .tile {
+  background: #0f2022;
+  border-color: rgba(244, 235, 215, 0.35);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.small-tiles .value {
+  font-size: 26px;
+}
+
+/* ---------- schermi stretti ---------- */
+
+@media (max-width: 640px) {
+  .tabs {
+    flex: 1 1 100%;
+    margin: 0;
+    border-radius: 20px;
+  }
+
+  .tab {
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 520px) {
+  .brand {
+    padding: 4px 12px;
+  }
+
+  .tab {
+    font-weight: 600;
+  }
+
+  /* come style.css: questo file arriva dopo e altrimenti lo coprirebbe */
+  .card {
+    padding: 14px 12px;
+    border-radius: 18px;
+  }
+
+  .card > h2,
+  .card-head h2 {
+    font-size: 21px;
+  }
+
+  .day-title-wrap h2 {
+    font-size: 28px;
+  }
+
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* colonna del posto più stretta, uguale nella lista e nell'intestazione dei pesi */
+  .day-list li,
+  .day-legend {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    column-gap: 10px;
+  }
+
+  .day-list li {
+    padding: 10px 4px;
+  }
+
+  .day-legend {
+    padding: 0 4px 2px;
+  }
+
+  .day-list .rank {
+    font-size: 24px;
+  }
+
+  .day-list .name {
+    font-size: 15px;
+  }
+
+  .day-list .score {
+    font-size: 30px;
+  }
+
+  .day-list .delta {
+    font-weight: 400;
+    font-size: 11px;
+  }
+
+  .alt {
+    margin-left: 6px;
+    font-size: 11px;
+  }
+
+  .forest-ready .mini.nk {
+    gap: 2px;
+  }
+
+  .forest-ready .mini.nk .cell {
+    width: 14px;
+    height: 14px;
+  }
+
+  .forest-ready .mini.lg.nk .cell {
+    font-size: 12px;
+  }
+
+  /* nello storico: due file da cinque cerchi, così la tabella non scorre di lato */
+  #pd-history .mini.nk {
+    flex-wrap: wrap;
+    width: 78px;
+  }
+
+  .tile {
+    padding: 12px 14px;
+  }
+
+  .tile .value {
+    font-size: 34px;
+  }
+
+  #leaderboard td.c-avg {
+    font-size: 21px;
+  }
+
+  #leaderboard .meter {
+    width: 34px;
+    margin-right: 6px;
+  }
+}
+
+/* sui telefoni più stretti il nome e il confronto con la media a sinistra, i punti a destra e i dieci
+   cerchi sotto, a tutta riga (cominciano nella stessa colonna dei pesi, che restano allineati) */
+@media (max-width: 400px) {
+  .day-list li {
+    grid-template-areas:
+      'rank name score'
+      'rank delta score'
+      'rank grid grid';
+  }
+
+  .day-list .delta {
+    text-align: left;
+  }
+
+  .day-list .grid {
+    margin-top: 6px;
+  }
+
+  /* qui i cerchi hanno tutta la riga: si possono ingrandire (10 × 18 px + 9 × 3 px stanno a 320 px) */
+  .forest-ready .mini.nk {
+    gap: 3px;
+  }
+
+  .forest-ready .mini.nk .cell {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ---------- "riduci movimento": niente animazioni ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  dialog[open] {
+    animation: none;
+  }
+
+  .tile,
+  .tab,
+  .brand,
+  .icon-btn,
+  .chip,
+  .seg button,
+  .day-list li,
+  .mini.nk .cell {
+    transition: none;
+  }
+}

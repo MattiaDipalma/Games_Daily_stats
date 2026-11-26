@@ -1,9 +1,13 @@
-// Riconosce i risultati dei tre giochi nei messaggi del gruppo.
+// Riconosce i risultati dei giochi nei messaggi del gruppo.
 //
 //   Krillion #111 🦐          Songless #432                  Magnitudle — Size It Up
 //   335                       ⬜⬜⬜⬜⬜ [Top Hits]           2026-11-03
 //   🦑🐟🏮🐟🦑🦑🫧             ⬜⬜🟩⬛⬛ [Hip Hop]            Score: 246/500
 //                                                            🟥🟥🟥🟥⬜ 71
+//   Noillirk #37 · 5,375m
+//   Inside the Storm
+//   🟡🟠🟣🟠🟠⚫⚫🟠🟡🔵
+//   Crowd Whisperer
 //
 // - Krillion: il punteggio è il numero sulla riga dopo "Krillion #N".
 // - Songless: non c'è un punteggio. Per ogni riga conta dove si trova il quadrato verde:
@@ -14,15 +18,38 @@
 //   "Size It Up" senza "Magnitudle", "389/500" senza "Score", righe come "🟥🟥🟥🟥⬜ 71%" o
 //   "1. ████░ 71/100", una data scritta in un altro modo (vale il giorno del messaggio) e, se manca
 //   del tutto l'intestazione, un messaggio fatto solo di righe "quadrati + punti".
+// - Noillirk: il messaggio dice la quota raggiunta ("5,375m"), non i punti. I punti si calcolano dai
+//   10 cerchi, uno per domanda, come su noillirk.com/scoring: 🟡 risposta n. 1 100, 🟠 2ª o 3ª 75,
+//   🟣 top 5 50, 🔵 top 10 25, ⚪ fuori dal tabellone 10, ⚫ saltata o tempo scaduto 0, moltiplicati per
+//   il peso della domanda (×1 le prime due, ×2 dalla 3ª alla 5ª, ×3 dalla 6ª all'8ª, ×4 le ultime due).
+//   Massimo 2500. Vale anche la tappa con la folla ("Noillirk #37 · 🧍38/100"), che ha gli stessi
+//   cerchi. Non contano "Noillirk Unlimited" (non è il daily) e la versione "Krillion-style", dove vince
+//   la risposta più rara: è un altro gioco.
 //
 // Un messaggio può contenere più giochi: ogni intestazione apre un blocco nuovo.
 
-export const GAMES = ['krillion', 'songless', 'magnitudle'];
+export const GAMES = ['krillion', 'songless', 'magnitudle', 'noillirk'];
 
-export const GAME_NAMES = { krillion: 'Krillion', songless: 'Songless', magnitudle: 'Magnitudle' };
+export const GAME_NAMES = {
+  krillion: 'Krillion',
+  songless: 'Songless',
+  magnitudle: 'Magnitudle',
+  noillirk: 'Noillirk',
+};
 
 /** Punti di Songless per posizione del quadrato verde (1°, 2°, …). */
 export const SONGLESS_POINTS = [100, 85, 60, 30, 10];
+
+/** Noillirk: punti di ogni cerchio (il posto della risposta nel tabellone) e peso delle 10 domande. */
+export const NOILLIRK_POINTS = new Map([
+  ['🟡', 100],
+  ['🟠', 75],
+  ['🟣', 50],
+  ['🔵', 25],
+  ['⚪', 10],
+  ['⚫', 0],
+]);
+export const NOILLIRK_WEIGHTS = [1, 1, 2, 2, 2, 3, 3, 3, 4, 4];
 
 const MAX_SCORE = 100000;
 
@@ -31,7 +58,14 @@ const HEADERS = {
   songless: /songless\s*#\s*(\d+)/i,
   // dal nome del gioco ("Magnitudle — Size It Up"): basta una delle due parti
   magnitudle: /magnitudle|size\s*it\s*up/i,
+  // "Noillirk #37 · 5,375m": il numero del daily (dopo il #1000 con la virgola, "#1,234").
+  // Anche "Noillirk Unlimited" apre un blocco, così i suoi cerchi non finiscono nel gioco di sopra.
+  noillirk: /noillirk(?:\s*#\s*(\d{1,3}(?:,\d{3})+|\d+)|\s+unlimited)/i,
 };
+
+// Noillirk: le partite che non sono il daily normale (su una riga d'intestazione). Non contano e
+// non vanno segnalate. "Krillion-style" anche scritto con lo spazio o con un altro trattino.
+const NOILLIRK_OTHER = /noillirk\s+unlimited|noillirk.*krillion\W*style/i;
 
 // caratteri invisibili che WhatsApp inserisce a volte (LRM, RLM, ZWSP, BOM, isolamenti).
 // Lo ZWJ (U+200D) resta: serve alle emoji composte.
@@ -231,10 +265,37 @@ function parseMagnitudleBlock(lines, { header = true } = {}) {
   return { puzzle: date, score, grid };
 }
 
+/**
+ * Punti di Noillirk: per ogni domanda i punti del cerchio per il peso della domanda.
+ * @param {string[]} circles i 10 cerchi, nell'ordine delle domande
+ */
+export function noillirkScore(circles) {
+  return circles.reduce((sum, c, i) => sum + (NOILLIRK_POINTS.get(c) ?? 0) * NOILLIRK_WEIGHTS[i], 0);
+}
+
+function parseNoillirkBlock(lines) {
+  // Unlimited (non è il daily) e Krillion-style (vince la risposta più rara) sono altri giochi
+  const header = lines[0].match(HEADERS.noillirk);
+  if (!header[1] || NOILLIRK_OTHER.test(lines[0])) return null;
+  const puzzle = number(header[1]);
+  if (!puzzle) return null;
+
+  // La riga dei cerchi: solo cerchi, uno per domanda, e il daily ha sempre 10 domande (le righe con
+  // del testo sono zona, titolo, sfida o commenti).
+  const set = new Set(NOILLIRK_POINTS.keys());
+  for (const line of lines.slice(1)) {
+    const { squares, rest } = squaresOf(line, set);
+    if (squares.length !== NOILLIRK_WEIGHTS.length || rest !== '') continue;
+    return { puzzle, score: noillirkScore(squares), grid: squares.join('') };
+  }
+  return null;
+}
+
 const PARSERS = {
   krillion: parseKrillionBlock,
   songless: parseSonglessBlock,
   magnitudle: parseMagnitudleBlock,
+  noillirk: parseNoillirkBlock,
 };
 
 /** Il gioco di cui la riga è l'intestazione, oppure null. */
@@ -279,18 +340,29 @@ export function parseMessage(text) {
   return results;
 }
 
-const GAME_WORD_RE = /krillion|songless|magnitudle|size\s*it\s*up/i;
+// crowdict.com: il nuovo indirizzo di Noillirk dal 2027, il testo da condividere potrebbe cambiare
+const GAME_WORD_RE = /krillion|songless|magnitudle|size\s*it\s*up|noillirk|crowdict/i;
+
+/** Le righe del messaggio senza le partite di Noillirk che non contano (dall'intestazione alla prossima). */
+function withoutIgnored(lines) {
+  let ignored = false;
+  return lines.filter((line) => {
+    if (headerOf(line)) ignored = NOILLIRK_OTHER.test(line);
+    return !ignored;
+  });
+}
 
 /**
  * Il messaggio sembra il risultato di un gioco? Serve solo per segnalare nel log i messaggi che
  * parseMessage() non ha riconosciuto (per esempio quando un gioco cambia il testo da condividere):
  * il nome di un gioco insieme a un numero da solo, a un punteggio o a una riga di quadrati, oppure
- * almeno due righe di quadrati.
+ * almeno due righe di quadrati. Le partite di Noillirk che non contano (Unlimited, Krillion-style)
+ * non vengono segnalate, il resto del messaggio sì.
  * @param {string | null | undefined} text
  */
 export function looksLikeResult(text) {
   if (!text || typeof text !== 'string') return false;
-  const lines = toLines(text).filter((l) => l !== '');
+  const lines = withoutIgnored(toLines(text)).filter((l) => l !== '');
   const gridRows = lines.filter((l) => squaresOf(l, BARS).squares.length >= 3).length;
   if (gridRows >= 2) return true;
   if (!lines.some((l) => GAME_WORD_RE.test(l))) return false;

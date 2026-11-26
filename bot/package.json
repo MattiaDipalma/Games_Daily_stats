@@ -2,7 +2,7 @@
   "name": "games-daily-stats-bot",
   "version": "1.0.0",
   "private": true,
-  "description": "Bot WhatsApp che raccoglie i risultati di Krillion, Songless e Magnitudle del gruppo Games Daily e li pubblica su GitHub Pages",
+  "description": "Bot WhatsApp che raccoglie i risultati di Krillion, Songless, Magnitudle e Noillirk del gruppo Games Daily e li pubblica su GitHub Pages",
   "type": "module",
   "engines": {
     "node": ">=20.12"

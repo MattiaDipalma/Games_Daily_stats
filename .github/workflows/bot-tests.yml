@@ -2,9 +2,10 @@ name: Test bot
 
 on:
   push:
-    paths: ['bot/**', '.github/workflows/bot-tests.yml']
+    # core.js: i calcoli di Noillirk del sito sono provati insieme al bot (test/site-noillirk.test.js)
+    paths: ['bot/**', 'docs/assets/core.js', '.github/workflows/bot-tests.yml']
   pull_request:
-    paths: ['bot/**', '.github/workflows/bot-tests.yml']
+    paths: ['bot/**', 'docs/assets/core.js', '.github/workflows/bot-tests.yml']
 
 jobs:
   test:

@@ -1,0 +1,703 @@
+/* Noillirk – la pagina come una salita dal bosco ("Sky Climb", ispirata a noillirk.com): la chioma
+   degli alberi con la luce nell'intestazione, i tronchi nella nebbia lungo la pagina e il sottobosco
+   con lo stagno in fondo. Pannelli verde-acqua scuri, testo crema, etichette gialle, forme da
+   giocattolo con l'ombra piena. Caricato solo da noillirk/index.html, dopo style.css. Gli sprite in
+   pixel art (variabili --spr-*) e gli elementi del bosco li aggiunge forest.js. Qui: caratteri, colori,
+   intestazione, bosco, sottobosco e altimetro; i pannelli sono in panels.css. */
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('../fonts/dm-sans-latin-400-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-weight: 700;
+  src: url('../fonts/dm-sans-latin-700-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Baloo 2';
+  font-weight: 800;
+  src: url('../fonts/baloo-2-latin-800-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Jersey 10';
+  src: url('../fonts/jersey-10-latin-400-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pixelify Sans';
+  font-weight: 700;
+  src: url('../fonts/pixelify-sans-latin-700-normal.woff2') format('woff2');
+  font-display: swap;
+}
+
+html[data-game='noillirk'] {
+  --page: #0c1a1c;
+  --surface: #16292b;
+  --surface-2: #1f3a3d;
+  --panel: rgba(22, 41, 43, 0.97);
+  --ink: #0a1415;
+  --text: #f4ebd7;
+  --text-2: #d2d6c6;
+  --muted: #9fb3ad;
+  --grid: rgba(244, 235, 215, 0.07);
+  --axis: #36565a;
+  --border: rgba(244, 235, 215, 0.14);
+  --accent: #ffd34d;
+  --teal: #5fe3c0;
+  --teal-edge: #2fa486;
+  --yellow-edge: #9a6f08;
+  --good: #5fe3c0;
+  --bad: #ff9478;
+  --radius: 20px;
+  /* i pannelli come su noillirk.com: bordo chiaro e ombra netta chiara, spostata in basso a destra */
+  --line: rgba(244, 235, 215, 0.55);
+  --lift: rgba(190, 205, 192, 0.5);
+  --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Baloo 2', 'DM Sans', system-ui, sans-serif;
+  /* Pixelify Sans solo per la scritta "Noillirk": le sue cifre non si leggono bene (il 5 sembra una S) */
+  --pixel: 'Pixelify Sans', 'DM Sans', ui-monospace, monospace;
+  --digits: 'Jersey 10', 'DM Sans', ui-monospace, monospace;
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  /* lo spazio per il sottobosco sotto il piè di pagina (un margine del piè uscirebbe dal body) */
+  padding-bottom: 240px;
+  background: var(--page);
+  font: 15px/1.55 var(--font);
+}
+
+::selection {
+  background: rgba(255, 200, 61, 0.35);
+}
+
+:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+
+a {
+  color: var(--accent);
+  transition: color 0.15s;
+}
+
+a:hover {
+  color: #fff1a8;
+}
+
+/* ---------- intestazione: la chioma degli alberi nella luce ---------- */
+
+.top {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-bottom: 66px;
+  background: radial-gradient(420px 220px at 70% 78%, rgba(255, 246, 200, 0.28), transparent 70%),
+    linear-gradient(
+      180deg,
+      #0d2c24 0,
+      #174a39 16%,
+      #1d5c4a 32%,
+      #22675a 48%,
+      #4f9f86 68%,
+      #8fd6b0 86%,
+      #94d8c0
+    );
+}
+
+.top .bar,
+.top .hero {
+  position: relative;
+  z-index: 1;
+}
+
+/* le foglie che pendono dall'alto */
+.forest-ready .top::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 32px;
+  background: var(--spr-leaves) 0 0 / 128px 32px repeat-x;
+  pointer-events: none;
+}
+
+/* i cespugli: il confine tra la chioma e il bosco sotto */
+.forest-ready .top::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48px;
+  background: var(--spr-bushes) 0 0 / 128px 48px repeat-x;
+  pointer-events: none;
+}
+
+.canopy {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ray {
+  position: absolute;
+  top: -40px;
+  left: var(--x);
+  width: var(--w);
+  height: 160%;
+  background: linear-gradient(90deg, transparent, rgba(236, 255, 226, 0.2) 50%, transparent);
+  transform: rotate(var(--rot));
+  transform-origin: 50% 0;
+  animation: ray var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes ray {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* i tronchi: la corteccia si ripete in verticale */
+.trunk {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--left);
+  width: var(--w);
+  background: var(--img) 0 0 / var(--w) var(--tile) repeat-y;
+}
+
+.canopy .trunk {
+  top: 18px;
+  opacity: 0.75;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 35%);
+  mask-image: linear-gradient(180deg, transparent, #000 35%);
+}
+
+/* l'uccellino giallo attraversa la chioma sbattendo le ali */
+.bird {
+  position: absolute;
+  left: 0;
+  top: 60px;
+  width: 33px;
+  height: 21px;
+  background: var(--spr-birdA) 0 0 / 100% 100% no-repeat;
+  transform: translateX(-60px);
+  animation:
+    fly var(--dur) linear var(--delay) infinite,
+    flap-bird 0.5s steps(1) infinite,
+    bob 3s ease-in-out infinite;
+}
+
+@keyframes fly {
+  from {
+    transform: translateX(-60px);
+  }
+
+  to {
+    transform: translateX(calc(100vw + 60px));
+  }
+}
+
+@keyframes flap-bird {
+  0% {
+    background-image: var(--spr-birdA);
+  }
+
+  50% {
+    background-image: var(--spr-birdB);
+  }
+}
+
+@keyframes bob {
+  50% {
+    translate: 0 6px;
+  }
+}
+
+/* ---------- titolo: la scritta gialla in pixel e il krill con i palloncini ---------- */
+
+.hero {
+  padding-top: 30px;
+}
+
+.hero h1 {
+  gap: 16px;
+  font: 700 58px/1 var(--pixel);
+  letter-spacing: 0.01em;
+  color: #ffc83d;
+  background: linear-gradient(180deg, #fff1a8 0 22%, #ffc83d 22% 60%, #ff9a4a 60% 72%, #ff7a59 72%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* il contorno scuro e l'ombra piena, come la scritta di noillirk.com */
+  filter: drop-shadow(3px 0 0 #111) drop-shadow(-3px 0 0 #111) drop-shadow(0 3px 0 #111)
+    drop-shadow(0 -3px 0 #111) drop-shadow(0 5px 0 rgba(10, 20, 21, 0.45));
+}
+
+.forest-ready .hero-emoji {
+  flex: none;
+  width: 51px;
+  height: 75px;
+  margin: -24px 0 -4px;
+  font-size: 0;
+  background: var(--spr-krill) 0 0 / 100% 100% no-repeat;
+  animation: rise 4s ease-in-out infinite;
+}
+
+@keyframes rise {
+  0%,
+  100% {
+    transform: translateY(2px) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+}
+
+/* come le etichette di noillirk.com ("DAILY #43 · 10 QUESTIONS · FREE") */
+.sub {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  margin-top: 18px;
+  padding: 6px 14px;
+  border: 2px solid #111;
+  border-radius: 14px;
+  background: rgba(10, 20, 21, 0.86);
+  box-shadow: 2px 3px 0 #111;
+  font: 700 11px/1.5 var(--font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.updated {
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+/* ---------- il bosco lungo la pagina ---------- */
+
+.forest {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(1100px 420px at 50% 0, rgba(143, 214, 176, 0.13), transparent 70%),
+    linear-gradient(180deg, #12332c 0, #102e29 8%, #0f2826 30%, #0d2224 58%, #0c1e1e 82%, #0b1a19);
+}
+
+.spr {
+  position: absolute;
+  display: block;
+  background: 0 0 / 100% 100% no-repeat;
+}
+
+.trunk.far {
+  opacity: 0.5;
+}
+
+/* i tronchi vicini restano in ombra, per non distrarre dai pannelli */
+.trunk.near {
+  filter: brightness(0.55) saturate(0.8);
+}
+
+.mist {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  top: var(--top);
+  height: 260px;
+  background: radial-gradient(45% 50% at 30% 50%, rgba(143, 214, 176, 0.1), transparent 70%),
+    radial-gradient(35% 45% at 72% 50%, rgba(148, 216, 192, 0.08), transparent 70%);
+  animation: mist var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes mist {
+  from {
+    transform: translateX(-6%);
+  }
+
+  to {
+    transform: translateX(6%);
+  }
+}
+
+/* lucciole: un pixel giallo che vaga e si accende */
+.firefly {
+  position: absolute;
+  left: var(--left);
+  top: var(--top);
+  width: 4px;
+  height: 4px;
+  background: #fff1a8;
+  box-shadow:
+    0 0 6px 2px rgba(255, 214, 102, 0.55),
+    0 0 16px 5px rgba(255, 214, 102, 0.18);
+  animation:
+    wander var(--dur) ease-in-out var(--delay) infinite alternate,
+    blink 3.2s ease-in-out var(--delay) infinite;
+}
+
+@keyframes wander {
+  33% {
+    translate: 18px -22px;
+  }
+
+  66% {
+    translate: -10px -38px;
+  }
+
+  100% {
+    translate: 8px -12px;
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* farfalle: le ali si chiudono e si aprono mentre girano */
+.flutter {
+  left: var(--left);
+  top: var(--top);
+  animation:
+    flap 0.28s ease-in-out infinite alternate,
+    roam var(--dur) ease-in-out var(--delay) infinite alternate;
+}
+
+@keyframes flap {
+  to {
+    scale: 0.3 1;
+  }
+}
+
+@keyframes roam {
+  25% {
+    translate: 40px -36px;
+  }
+
+  50% {
+    translate: 70px 6px;
+  }
+
+  75% {
+    translate: 24px 30px;
+  }
+
+  100% {
+    translate: -30px -10px;
+  }
+}
+
+/* palloncini sciolti che salgono piano dal sottobosco fino in cima */
+.loose {
+  left: var(--left);
+  top: 100%;
+  transform-origin: 50% 100%;
+  animation:
+    float var(--dur) linear var(--delay) infinite,
+    sway 5s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  to {
+    top: -60px;
+  }
+}
+
+@keyframes sway {
+  from {
+    rotate: -4deg;
+  }
+
+  to {
+    rotate: 4deg;
+  }
+}
+
+/* ---------- sottobosco ---------- */
+
+.floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 250px;
+}
+
+.floor-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(70% 80% at 50% 100%, rgba(95, 227, 192, 0.12), transparent 70%);
+}
+
+.ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70px;
+  background: var(--spr-ground) 0 0 / 160px 70px repeat-x;
+}
+
+.thing {
+  left: var(--left);
+  bottom: 54px;
+  translate: -50% 0;
+}
+
+.thing.low {
+  bottom: 50px;
+}
+
+.thing.flat {
+  bottom: 32px;
+}
+
+.thing.sway {
+  transform-origin: 50% 100%;
+  animation: sway 4s ease-in-out infinite alternate;
+}
+
+/* ---------- senza ancora risultati: un pannello col krill e i palloncini al posto della riga ---------- */
+
+#status:has(~ #content[hidden]) {
+  display: block;
+  max-width: 460px;
+  margin: 56px auto;
+  padding: 142px 24px 26px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  /* lo sprite è 17 × 25 pixel: 4 volte */
+  background: var(--spr-krill, none) 50% 26px / 68px 100px no-repeat var(--panel);
+  box-shadow: 4px 4px 0 var(--lift);
+  font: 800 18px/1.4 var(--display);
+  text-align: center;
+  color: var(--text);
+  image-rendering: pixelated;
+}
+
+/* ---------- la zona della salita accanto alla quota, sugli schermi larghi ---------- */
+
+@media (min-width: 900px) {
+  .day-list .alt::after {
+    content: ' · ' attr(data-zone);
+    font-weight: 400;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+}
+
+/* ---------- altimetro (solo schermi larghi) ---------- */
+
+.ruler {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 84px;
+  width: 112px;
+  font: 700 10px/1 var(--font);
+  color: rgba(95, 227, 192, 0.75);
+}
+
+.ruler::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 24px;
+  border-right: 2px dashed rgba(95, 227, 192, 0.25);
+}
+
+.tick {
+  position: absolute;
+  right: 24px;
+  top: var(--y);
+  width: 7px;
+  border-top: 2px solid rgba(95, 227, 192, 0.45);
+}
+
+.tick.major {
+  width: 12px;
+}
+
+.tick[data-label]::before {
+  content: attr(data-label);
+  position: absolute;
+  right: calc(100% + 6px);
+  top: -7px;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 2px var(--page),
+    0 0 6px var(--page);
+}
+
+.tick.peak::before {
+  top: 2px;
+}
+
+.zone {
+  position: absolute;
+  right: 4px;
+  top: var(--y);
+  writing-mode: vertical-rl;
+  transform: translateY(-50%);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(255, 211, 77, 0.55);
+}
+
+.wide {
+  display: none;
+}
+
+@media (min-width: 1240px) {
+  .ruler,
+  .wide {
+    display: block;
+  }
+
+  .no-ruler {
+    display: none;
+  }
+}
+
+/* il pulviscolo nella luce: puntini che salgono lentissimi */
+.motes {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: -260px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: radial-gradient(1.5px 1.5px at 40px 60px, #e9ffe8, transparent),
+    radial-gradient(1px 1px at 150px 190px, #e9ffe8, transparent),
+    radial-gradient(2px 2px at 220px 110px, #fff1a8, transparent),
+    radial-gradient(1px 1px at 90px 230px, #e9ffe8, transparent),
+    radial-gradient(1.5px 1.5px at 190px 20px, #bff5df, transparent);
+  background-size: 260px 260px;
+  animation: motes 60s linear infinite;
+}
+
+@keyframes motes {
+  to {
+    transform: translateY(-260px);
+  }
+}
+
+/* ---------- piè di pagina, sopra il sottobosco ---------- */
+
+.foot {
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  margin: 28px auto 0;
+  padding: 8px 18px;
+  border: 2px solid #111;
+  border-radius: 16px;
+  background: rgba(10, 20, 21, 0.88);
+  font-size: 13px;
+}
+
+/* ---------- schermi stretti ---------- */
+
+@media (max-width: 640px) {
+  .opt {
+    display: none;
+  }
+
+  .thing.pond {
+    left: 50%;
+  }
+}
+
+@media (max-width: 520px) {
+  .top {
+    padding-bottom: 52px;
+  }
+
+  .forest-ready .top::after {
+    height: 36px;
+    background-size: 96px 36px;
+  }
+
+  .hero {
+    padding-top: 26px;
+  }
+
+  .hero h1 {
+    gap: 12px;
+    font-size: 44px;
+  }
+
+  .forest-ready .hero-emoji {
+    width: 34px;
+    height: 50px;
+    margin: -14px 0 -2px;
+  }
+
+  .sub {
+    margin-top: 14px;
+    padding: 5px 12px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .updated {
+    font-size: 10px;
+  }
+}
+
+/* ---------- "riduci movimento": tutto fermo ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .forest *,
+  .canopy *,
+  .motes,
+  .hero-emoji {
+    animation: none !important;
+  }
+
+  .loose {
+    top: 60%;
+  }
+
+  .firefly {
+    opacity: 0.7;
+  }
+}

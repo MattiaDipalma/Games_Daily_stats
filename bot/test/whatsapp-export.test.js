@@ -88,6 +88,32 @@ test('export in inglese (mese/giorno, AM/PM)', () => {
   assert.equal(results[1].ts, Date.UTC(2026, 9, 12, 22, 5) / 1000, '12:05 AM = 00:05');
 });
 
+test('export con Noillirk: il messaggio su più righe è un risultato solo', () => {
+  const text = [
+    '[20/11/26, 08:12:30] Nils Geigy: Noillirk #37 · 5,375m',
+    'Inside the Storm',
+    '🟡🟠🟣🟠🟠⚫⚫🟠🟡🔵',
+    'Crowd Whisperer',
+    '[20/11/26, 08:13:02] Anna: Noillirk #37 · 🧍41/100',
+    '🟡🟡🟠🟣🟠⚫🔵🟠🟡🟡',
+    'Mind Reader',
+  ].join('\n');
+  assert.deepEqual(
+    resultsFromExport(text, { timeZone: 'Europe/Zurich' }).map((r) => [
+      r.game,
+      r.player,
+      r.puzzle,
+      r.score,
+      r.date,
+    ]),
+    [
+      ['noillirk', 'Nils Geigy', 37, 1300, '2026-11-20'],
+      // 100 + 100 + 75×2 + 50×2 + 75×2 + 0 + 25×3 + 75×3 + 100×4 + 100×4
+      ['noillirk', 'Anna', 37, 1700, '2026-11-20'],
+    ],
+  );
+});
+
 test('zonedToUnix gestisce ora legale e solare', () => {
   assert.equal(zonedToUnix(2026, 1, 15, 12, 0, 0, 'Europe/Zurich'), Date.UTC(2026, 0, 15, 11) / 1000);
   assert.equal(zonedToUnix(2026, 7, 15, 12, 0, 0, 'Europe/Zurich'), Date.UTC(2026, 6, 15, 10) / 1000);

@@ -8,13 +8,14 @@ una pagina per ogni gioco, ognuna col suo colore:
 | 🦐 Krillion | `/krillion/` | fondale marino in pixel art, ispirato a [krillion.io](https://krillion.io) |
 | 🎵 Songless | `/songless/` | nero e verde: un lettore musicale, con equalizzatore e forma d'onda |
 | 📏 Magnitudle | `/magnitudle/` | rosso: un righello su carta millimetrata |
+| 🎈 Noillirk | `/noillirk/` | bosco in pixel art, ispirato a [noillirk.com](https://noillirk.com) |
 
 ```
 WhatsApp (gruppo)  ──►  bot (bot/)  ──►  docs/data/<gioco>.json su GitHub  ──►  sito (GitHub Pages)
 ```
 
 È lo stesso bot di [Krillion Daily](https://github.com/MattiaDipalma/krillion_stats), che ora legge
-tre giochi nella stessa chat.
+quattro giochi nella stessa chat.
 
 ## I giochi
 
@@ -120,6 +121,46 @@ del mouse o al tocco) e la media del giorno. Ogni manche è una barretta riempit
 quelle perfette (100) hanno il bordo chiaro. Tutto questo è in
 [`docs/assets/magnitudle/`](docs/assets/magnitudle/) e non tocca le altre pagine.
 
+### 🎈 Noillirk
+
+```
+Noillirk #37 · 5,375m
+Inside the Storm
+🟡🟠🟣🟠🟠⚫⚫🟠🟡🔵
+Crowd Whisperer
+```
+
+Dieci domande: per ognuna vince la risposta che dà più gente. Il messaggio dice la quota raggiunta
+(`5,375m`) e la zona della salita (`Inside the Storm`), ma non i punti: il bot li calcola dai cerchi,
+uno per domanda, come spiega [noillirk.com/scoring](https://noillirk.com/scoring). Ogni cerchio vale
+secondo il posto della risposta nel tabellone, moltiplicato per il peso della domanda:
+
+| Cerchio | 🟡 | 🟠 | 🟣 | 🔵 | ⚪ | ⚫ |
+| --- | --- | --- | --- | --- | --- | --- |
+| Risposta | n. 1 | 2ª o 3ª | top 5 | top 10 | fuori dal tabellone | saltata o tempo scaduto |
+| Punti | 100 | 75 | 50 | 25 | 10 | 0 |
+
+| Domanda | 1–2 | 3–5 | 6–8 | 9–10 |
+| --- | --- | --- | --- | --- |
+| Peso | ×1 | ×2 | ×3 | ×4 |
+
+Il massimo è 2500 punti (dieci risposte n. 1, 14 km di quota). Nell'esempio: 100 + 75 + 50×2 + 75×2 +
+75×2 + 0 + 0 + 75×3 + 100×4 + 25×4 = **1300 punti**, cioè 5'375 m. Sul sito accanto ai punti c'è la quota,
+calcolata come nel gioco, e il nome della zona.
+
+Vale anche il messaggio della tappa con la folla (`Noillirk #37 · 🧍38/100`), che ha gli stessi cerchi.
+Non contano invece `Noillirk Unlimited` (non è il daily) e la versione `Krillion-style`, dove vince la
+risposta più rara: è un altro gioco, e il bot la ignora senza segnalarla.
+
+La pagina di Noillirk è un bosco in pixel art, come [noillirk.com](https://noillirk.com): in alto le cime
+degli alberi e il krill che sale con i palloncini, poi i tronchi nella nebbia, e in fondo alla pagina il
+sottobosco con felci, funghi e lo stagno. I pannelli sono verde-acqua scuro con le scritte gialle e
+color crema, e i cerchi dei risultati sono disegnati in pixel art; sopra i cerchi c'è il peso di ogni
+domanda (×1 … ×4). Sugli schermi larghi un altimetro sul bordo destro va dal sottobosco (0 m) ai 14 km
+in cima alla pagina, con i nomi delle zone della salita. Le animazioni si fermano se nel sistema è attivo
+"riduci movimento". Tutto questo è in [`docs/assets/noillirk/`](docs/assets/noillirk/) e non tocca le
+altre pagine.
+
 ### Regole comuni
 
 - Un risultato per persona e per puzzle: vale il primo messaggio. Se il messaggio viene modificato su
@@ -134,12 +175,14 @@ quelle perfette (100) hanno il bordo chiaro. Tutto questo è in
 Il sito è in [`docs/`](docs/) (HTML/CSS/JS, nessuna dipendenza). La home ha un riquadro per ogni gioco
 (il podio dell'ultimo puzzle e chi è in testa; un clic apre la pagina del gioco) e sotto la
 **classifica generale**: per ogni gioco la posizione media del giocatore (1 = primo del giorno, come nella
-colonna "Pos. media" della classifica del gioco) e, per ordinare, la media dei tre giochi, così ogni
-gioco conta allo stesso modo. Ci entra solo chi è nella classifica di tutti e tre i giochi.
+colonna "Pos. media" della classifica del gioco) e, per ordinare, la media dei giochi, così ogni
+gioco conta allo stesso modo. Ci entra solo chi è nella classifica di tutti i giochi. Un gioco in cui
+nessuno è ancora in classifica (per esempio Noillirk appena aggiunto) conta da quando qualcuno ci entra,
+così non svuota la classifica generale: fino ad allora lo dice la nota sotto la tabella.
 
 Ogni pagina di gioco mostra:
 
-- la classifica (media, partite, record, vittorie, posizione media, serie di giorni consecutivi); ci entra solo chi ha giocato almeno 4 volte negli ultimi 7 giorni, in tutti e tre i giochi (chi non ha i requisiti resta raggiungibile dalla sua scheda);
+- la classifica (media, partite, record, vittorie, posizione media, serie di giorni consecutivi); ci entra solo chi ha giocato almeno 4 volte negli ultimi 7 giorni, in tutti i giochi (chi non ha i requisiti resta raggiungibile dalla sua scheda);
 - il grafico dell'andamento (punteggio o media mobile su 7 partite);
 - il testa a testa tra ogni coppia di giocatori;
 - la scheda di ogni giocatore (clic sul nome);
@@ -217,6 +260,7 @@ Esempio di output:
 04/11/2026, 08:00:01 |    Krillion       0 risultati – github.com/MattiaDipalma/Games_Daily_stats (main:docs/data/krillion.json)
 04/11/2026, 08:00:01 |    Songless       0 risultati – github.com/MattiaDipalma/Games_Daily_stats (main:docs/data/songless.json)
 04/11/2026, 08:00:01 |    Magnitudle     0 risultati – github.com/MattiaDipalma/Games_Daily_stats (main:docs/data/magnitudle.json)
+04/11/2026, 08:00:01 |    Noillirk       0 risultati – github.com/MattiaDipalma/Games_Daily_stats (main:docs/data/noillirk.json)
 04/11/2026, 08:00:31 | ✅ Collegato a WhatsApp come Mattia
 04/11/2026, 08:00:32 | 👥 Gruppo trovato: "Games Daily" (120363…@g.us)
 04/11/2026, 08:31:10 | 📥 Krillion #112 – Daniel: 285
@@ -288,7 +332,7 @@ scelto sul suo profilo WhatsApp (o un numero mascherato come `+41∙∙∙∙∙
 
 Per decidere come compare un nome sul sito modifica [`docs/data/names.json`](docs/data/names.json)
 direttamente su GitHub: a sinistra il nome come compare nei file dei dati, a destra il nome da mostrare.
-Vale per tutti e tre i giochi e anche per le vecchie partite di Krillion Daily, subito e senza toccare il
+Vale per tutti i giochi e anche per le vecchie partite di Krillion Daily, subito e senza toccare il
 bot. Due nomi che puntano allo stesso nome diventano la stessa persona. I nomi del vecchio sito sono già
 dentro.
 
@@ -300,7 +344,7 @@ dentro.
 ```
 
 Per togliere qualcuno dalla classifica senza cancellare i suoi dati aggiungi il suo nome (quello da
-mostrare) a `"_hidden": ["Mael", "Nils"]`: basta toglierlo da lì per farlo tornare.
+mostrare) a `"_hidden": ["Mael"]`: basta toglierlo da lì per farlo tornare.
 
 `names.json` è pubblico: non metterci numeri di telefono completi. Per quelli crea invece
 `bot/aliases.json` partendo da [`bot/aliases.example.json`](bot/aliases.example.json): il bot salva
@@ -321,9 +365,11 @@ npm run import -- percorso/_chat.txt --dry-run   # mostra cosa trova, senza salv
 npm run import -- percorso/_chat.txt             # salva su GitHub (o in locale senza token)
 ```
 
-Legge tutti e tre i giochi. Funziona con gli export di iPhone e Android, in italiano, tedesco o inglese.
+Legge tutti i giochi. Funziona con gli export di iPhone e Android, in italiano, tedesco o inglese.
 Se le date risultano sbagliate (giorno e mese invertiti) aggiungi `--date-format dmy` oppure
-`--date-format mdy`. Importare più volte lo stesso file non crea doppioni.
+`--date-format mdy`. Importare più volte lo stesso file non crea doppioni. È anche il modo per
+recuperare i risultati di un gioco mandati nel gruppo prima che il bot lo conoscesse (per esempio i
+Noillirk dal #37 in poi).
 
 ## Correggere un risultato a mano
 
@@ -334,9 +380,10 @@ I file in `docs/data/` contengono un risultato per riga e si possono modificare 
 {"puzzle":112,"player":"Daniel","score":285,"date":"2026-11-04","ts":1793790645,"grid":"🦑🐟🏮🐟🦑🦑🫧"}
 {"puzzle":433,"player":"Anna","score":120,"date":"2026-11-04","ts":1793791000,"grid":"⬜⬜⬜⬜⬜ [Top Hits]\n…"}
 {"puzzle":"2026-11-04","player":"Nils","score":246,"date":"2026-11-04","ts":1793792000,"grid":"🟥🟥🟥🟥⬜ 71\n…"}
+{"puzzle":37,"player":"Nils","score":1300,"date":"2026-11-20","ts":1795158750,"grid":"🟡🟠🟣🟠🟠⚫⚫🟠🟡🔵"}
 ```
 
-Per Songless `score` è già calcolato dal bot: se correggi la griglia, ricalcola anche i punti.
+Per Songless e Noillirk `score` è già calcolato dal bot: se correggi la griglia, ricalcola anche i punti.
 
 ## Struttura
 
@@ -344,19 +391,21 @@ Per Songless `score` è già calcolato dal bot: se correggi la griglia, ricalcol
 bot/
   src/index.js           connessione a WhatsApp, salvataggio a gruppi
   src/collector.js       dai messaggi WhatsApp ai risultati (nomi, modifiche, gruppo)
-  src/parser.js          riconosce Krillion, Songless e Magnitudle e calcola i punti di Songless
+  src/parser.js          riconosce Krillion, Songless, Magnitudle e Noillirk e calcola i punti di Songless
+                         e Noillirk
   src/stats.js           formato dei file dei dati, unione dei risultati, numeri mascherati
   src/store.js           salvataggio su GitHub (API) o su file, un file per gioco
   src/import-chat.js     import dall'export della chat
   src/whatsapp-export.js lettura del file esportato da WhatsApp
-  test/                  test (npm test)
+  test/                  test (npm test), compresi i calcoli di Noillirk del sito (site-noillirk.test.js)
 docs/                    il sito (GitHub Pages)
   index.html             home
-  krillion/ songless/ magnitudle/   le pagine dei giochi
-  assets/core.js         dati, calcoli, grafici e testi comuni (anche seasonStart di Krillion)
+  krillion/ songless/ magnitudle/ noillirk/   le pagine dei giochi
+  assets/core.js         dati, calcoli, grafici e testi comuni (anche seasonStart di Krillion e la quota
+                         di Noillirk)
   assets/game.js         pagina di un gioco
   assets/home.js         home: i riquadri dei giochi e la classifica generale
-  assets/style.css       stile e colori dei tre giochi
+  assets/style.css       stile e colori dei giochi
   assets/krillion/       il fondale marino della pagina di Krillion:
     sea.css                colori, caratteri pixel, cielo, acqua e fondale
     sea.js                 nuvole, barca, pesci, meduse, bolle, fondale e profondimetro
@@ -367,11 +416,18 @@ docs/                    il sito (GitHub Pages)
   assets/magnitudle/     il righello della pagina di Magnitudle:
     ruler.css              colori, caratteri, carta millimetrata, barrette delle manche
     ruler.js               la scala del righello e i quadrati dell'intestazione
-  assets/fonts/          i caratteri delle tre pagine (licenza OFL, in OFL.txt): Silkscreen, Jersey 10 e
-                         Space Mono per Krillion, Unbounded per Songless, Barlow Condensed per Magnitudle
+  assets/noillirk/       il bosco della pagina di Noillirk:
+    forest.css             caratteri, colori, cime degli alberi, tronchi, sottobosco e altimetro
+    panels.css             i pannelli in stile noillirk.com, cerchi dei risultati, telefoni
+    forest.js              lucciole, farfalle, uccellino, palloncini, sottobosco e altimetro
+    sprites.js             gli sprite in pixel art, disegnati a caratteri
+  assets/fonts/          i caratteri delle pagine dei giochi (licenza OFL, in OFL.txt): Silkscreen, Jersey 10
+                         e Space Mono per Krillion, Unbounded per Songless, Barlow Condensed per
+                         Magnitudle, DM Sans, Baloo 2, Pixelify Sans e Jersey 10 per Noillirk
   data/krillion.json     i risultati (uno per gioco, scritti dal bot)
   data/songless.json
   data/magnitudle.json
+  data/noillirk.json     (lo crea il bot con il primo risultato di Noillirk)
   data/krillion-legacy.json   le partite del vecchio gruppo Krillion Daily
   data/names.json        i nomi da mostrare sul sito
 ```

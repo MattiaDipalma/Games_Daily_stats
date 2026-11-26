@@ -25,6 +25,9 @@ const MAGNITUDLE = [
   '🟥🟥⬜⬜⬜ 49',
   '🟥🟥🟥🟥🟥 100',
 ].join('\n');
+// Noillirk: il numero del daily e la quota, la zona, un cerchio per domanda e il titolo
+const NOILLIRK = 'Noillirk #37 · 5,375m\nInside the Storm\n🟡🟠🟣🟠🟠⚫⚫🟠🟡🔵\nCrowd Whisperer';
+const NOILLIRK_GRID = '🟡🟠🟣🟠🟠⚫⚫🟠🟡🔵';
 
 const one = (text) => {
   const results = parseMessage(text);
@@ -171,20 +174,127 @@ test('Magnitudle: un commento con dei quadrati non è una manche', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Noillirk
+
+test('Noillirk: il messaggio del gruppo vale 1300 punti (5,375 m, Inside the Storm)', () => {
+  // 🟡100×1 + 🟠75×1 + 🟣50×2 + 🟠75×2 + 🟠75×2 + ⚫ + ⚫ + 🟠75×3 + 🟡100×4 + 🔵25×4
+  assert.deepEqual(one(NOILLIRK), { game: 'noillirk', puzzle: 37, score: 1300, grid: NOILLIRK_GRID });
+});
+
+test('Noillirk: punti del cerchio per il peso della domanda', () => {
+  // dieci risposte n. 1: il massimo, 100 × (1 + 1 + 2 + 2 + 2 + 3 + 3 + 3 + 4 + 4)
+  assert.equal(one(`Noillirk #40 · 14.0 km\nThe Jet Stream\n${'🟡'.repeat(10)}\nMind Reader`).score, 2500);
+  assert.equal(one(`Noillirk #40 · 0m\nThe Pond Path\n${'⚫'.repeat(10)}\nFree Thinker`).score, 0);
+  // una top 10 alla prima domanda (25 × 1) e un fuori dal tabellone all'ultima (10 × 4)
+  assert.equal(one('Noillirk #40 · 9m\n🔵⚫⚫⚫⚫⚫⚫⚫⚫⚪').score, 65);
+  // ogni cerchio alla terza domanda (×2)
+  for (const [circle, points] of [
+    ['🟡', 200],
+    ['🟠', 150],
+    ['🟣', 100],
+    ['🔵', 50],
+    ['⚪', 20],
+    ['⚫', 0],
+  ]) {
+    assert.equal(one(`Noillirk #40 · 1m\n⚫⚫${circle}⚫⚫⚫⚫⚫⚫⚫`).score, points, circle);
+  }
+});
+
+test('Noillirk: la tappa con la folla (🧍38/100), la sfida dopo il titolo e il link', () => {
+  const crowd = `Noillirk #43 · 🧍38/100\n${NOILLIRK_GRID}\nCrowd Whisperer · beat Mia 38–25\nnoillirk.com/c/a1b2`;
+  assert.deepEqual(one(crowd), { game: 'noillirk', puzzle: 43, score: 1300, grid: NOILLIRK_GRID });
+  const climb = `${NOILLIRK} · climbed past Nils\nnoillirk.com/c/a1b2`;
+  assert.deepEqual([one(climb).puzzle, one(climb).score], [37, 1300]);
+});
+
+test('Noillirk: testo prima, caratteri invisibili, selettori di variante e numeri con la virgola', () => {
+  const r = one(
+    `oggi così\n\u200eNoillirk #37 · 5,375m\nInside the Storm\n🟡🟠🟣🟠🟠⚫️⚫️🟠🟡🔵\nCrowd Whisperer`,
+  );
+  assert.deepEqual([r.puzzle, r.score, r.grid], [37, 1300, NOILLIRK_GRID]);
+  assert.equal(one(`Noillirk #1,234 · 5,375m\n${NOILLIRK_GRID}`).puzzle, 1234);
+  // un commento sotto con altri cerchi non cambia niente
+  assert.equal(one(`${NOILLIRK}\nla 6 e la 7 🟡🟡 non le sapevo`).score, 1300);
+});
+
+test('Noillirk: la versione Krillion-style (vince la risposta più rara) è un altro gioco', () => {
+  const rare = `Noillirk #43 · Krillion-style · 5,375m\nInside the Storm\n${NOILLIRK_GRID}\nTrailblazer`;
+  assert.deepEqual(parseMessage(rare), []);
+  assert.deepEqual(parseMessage(`Noillirk #43 · Krillion-style · ★ 1,015\n${NOILLIRK_GRID}\nSide Trail`), []);
+  // non viene segnalata come messaggio non riconosciuto
+  assert.equal(looksLikeResult(rare), false);
+  // insieme al daily normale vale il daily normale
+  assert.deepEqual(
+    parseMessage(`${rare}\n\n${NOILLIRK}`).map((r) => [r.game, r.puzzle, r.score]),
+    [['noillirk', 37, 1300]],
+  );
+  // scritto in un altro modo: con lo spazio, in maiuscolo, col trattino che non va a capo (U+2011)
+  for (const label of ['Krillion style', 'KRILLION-STYLE', 'Krillion‑style']) {
+    const text = `Noillirk #43 · ${label} · 5,375m\n${NOILLIRK_GRID}\nTrailblazer`;
+    assert.deepEqual(parseMessage(text), [], label);
+    assert.equal(looksLikeResult(text), false, label);
+  }
+});
+
+test('Noillirk: una partita Unlimited dopo un altro gioco non gli lascia i suoi cerchi', () => {
+  const unlimited = `Noillirk Unlimited · 🧍38/100\n${NOILLIRK_GRID}\nCrowd Whisperer`;
+  const [songless] = parseMessage(`Songless #455\n🟩⬜⬜⬜⬜ [Top Hits]\n${unlimited}`);
+  assert.deepEqual(
+    [songless.game, songless.score, songless.grid],
+    ['songless', 100, '🟩⬜⬜⬜⬜ [Top Hits]'],
+  );
+  const [krillion] = parseMessage(`Krillion #134 🦐\n440\n🦑🐟\n${unlimited}`);
+  assert.deepEqual([krillion.game, krillion.score, krillion.grid], ['krillion', 440, '🦑🐟']);
+});
+
+test('Noillirk: righe di soli cerchi prima della riga del risultato', () => {
+  assert.equal(one(`Noillirk #37 · 5,375m\n🔥\n🟡\n${NOILLIRK_GRID}`).score, 1300);
+});
+
+test('Noillirk: messaggi che non sono risultati', () => {
+  for (const text of [
+    'Noillirk #37 · 5,375m',
+    'hai fatto il noillirk #37?\n🟡🟡🟡',
+    // 9 e 11 cerchi: il daily ha 10 domande
+    'Noillirk #37 · 5,375m\n🟡🟠🟣🟠🟠⚫⚫🟠🟡',
+    'Noillirk #37 · 5,375m\n🟡🟠🟣🟠🟠⚫⚫🟠🟡🔵🔵',
+    // senza "#" non c'è il numero del daily (la quota non è il numero)
+    `Noillirk · 5,375m\n${NOILLIRK_GRID}`,
+    `Noillirk 5,375m\n${NOILLIRK_GRID}`,
+    // dieci cerchi dentro una frase non sono la riga del risultato
+    'Noillirk #37 · 5,375m\nho sbagliato 🟡🟡🟡🟡🟡🟡🟡🟡🟡🟡 tutte\nCrowd Whisperer',
+    // le partite libere non sono il daily
+    `Noillirk Unlimited · 🧍38/100\n${NOILLIRK_GRID}\nCrowd Whisperer`,
+  ]) {
+    assert.deepEqual(parseMessage(text), [], text);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Più giochi nello stesso messaggio
 
-test('tre giochi nello stesso messaggio', () => {
-  const results = parseMessage(`${KRILLION}\n\n${SONGLESS}\n\n${MAGNITUDLE}`);
+test('quattro giochi nello stesso messaggio', () => {
+  const results = parseMessage(`${KRILLION}\n\n${SONGLESS}\n\n${MAGNITUDLE}\n\n${NOILLIRK}`);
   assert.deepEqual(
     results.map((r) => [r.game, r.puzzle, r.score]),
     [
       ['krillion', 111, 335],
       ['songless', 432, 120],
       ['magnitudle', '2026-11-03', 246],
+      ['noillirk', 37, 1300],
     ],
   );
   // la griglia di Krillion non si prende le righe degli altri giochi
   assert.equal(results[0].grid, '🦑🐟🏮🐟🦑🦑🫧');
+  // e Noillirk prima di Songless non gli passa i suoi cerchi
+  const swapped = parseMessage(`${NOILLIRK}\n${SONGLESS}`);
+  assert.deepEqual(
+    swapped.map((r) => [r.game, r.score]),
+    [
+      ['noillirk', 1300],
+      ['songless', 120],
+    ],
+  );
 });
 
 test('stesso gioco due volte: vale il primo', () => {
@@ -217,6 +327,12 @@ test('looksLikeResult: messaggi che sembrano risultati (per il log dei non ricon
     'Size It Up\n⭐⭐⭐⭐ 430 su 500 — 4/5',
     'Krillion #80 🦐\nPunteggio: due e ottantacinque\n🦐⚪🦐',
     'Nuovo gioco\n🟪🟪🟪⬜⬜\n🟪🟪⬜⬜⬜',
+    // Noillirk con nove cerchi, e il testo che potrebbe arrivare dopo il trasloco su crowdict.com
+    'Noillirk #37 · 5,375m\nInside the Storm\n🟡🟠🟣🟠🟠⚫⚫🟠🟡\nCrowd Whisperer',
+    `Classic #50 · Crowd\n${NOILLIRK_GRID}\nCrowd Whisperer\ncrowdict.com/c/a1b2`,
+    // una partita che non conta nello stesso messaggio non nasconde il resto
+    `Noillirk #44 · 5,375m\n${NOILLIRK_GRID}🟡🟡\nmeglio della mia noillirk unlimited di ieri`,
+    `Krillion #135 🦐\nscore: ???\n\nNoillirk Unlimited · 🧍38/100\n${NOILLIRK_GRID}`,
   ]) {
     assert.deepEqual(parseMessage(text), [], text);
     assert.equal(looksLikeResult(text), true, text);
@@ -229,6 +345,8 @@ test('looksLikeResult: messaggi che sembrano risultati (per il log dei non ricon
     'magnitudle oggi impossibile',
     'chi ha fatto songless #432?\nio 🟩',
     '1. Nils\n2. Daniel\n3. Nic',
+    'hai fatto il noillirk di oggi?',
+    `Noillirk Unlimited · 🧍38/100\n${NOILLIRK_GRID}\nCrowd Whisperer`,
   ]) {
     assert.equal(looksLikeResult(text), false, String(text));
   }
@@ -237,4 +355,5 @@ test('looksLikeResult: messaggi che sembrano risultati (per il log dei non ricon
 test('puzzleLabel', () => {
   assert.equal(puzzleLabel('krillion', 111), 'Krillion #111');
   assert.equal(puzzleLabel('magnitudle', '2026-11-03'), 'Magnitudle 2026-11-03');
+  assert.equal(puzzleLabel('noillirk', 37), 'Noillirk #37');
 });
