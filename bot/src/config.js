@@ -36,7 +36,7 @@ export function loadConfig() {
     githubToken: env.GITHUB_TOKEN?.trim() || null,
     githubRepo: env.GITHUB_REPO?.trim() || 'MattiaDipalma/Games_Daily_stats',
     githubBranch: env.GITHUB_BRANCH?.trim() || 'main',
-    // cartella dei dati nel repository: un file per gioco (krillion.json, songless.json, magnitudle.json)
+    // cartella dei dati nel repository: un file per gioco (krillion.json, songless.json, …)
     dataPath: (env.DATA_PATH?.trim() || 'docs/data').replace(/^\/+|\/+$/g, ''),
     localDataDir: fromBot(env.LOCAL_DATA_DIR || '../docs/data'),
 

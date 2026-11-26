@@ -142,7 +142,7 @@ export function createStore(config, game, { local = false } = {}) {
   return new LocalStore(resolve(config.localDataDir, `${game}.json`), game);
 }
 
-/** Un archivio per gioco: { krillion: store, songless: store, magnitudle: store } */
+/** Un archivio per gioco: { krillion: store, songless: store, magnitudle: store, noillirk: store } */
 export function createStores(config, opts) {
   return Object.fromEntries(GAMES.map((game) => [game, createStore(config, game, opts)]));
 }

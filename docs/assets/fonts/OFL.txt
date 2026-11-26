@@ -14,6 +14,13 @@ Magnitudle (docs/assets/magnitudle/ruler.css):
 
 - Barlow Condensed: Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
 
+Noillirk (docs/assets/noillirk/forest.css):
+
+- DM Sans: Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts)
+- Baloo 2: Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2)
+- Pixelify Sans: Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans)
+- Jersey 10 (the same file as Krillion): Copyright 2023 The Soft Type Project Authors (https://github.com/scfried/soft-type-jersey)
+
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
 http://scripts.sil.org/OFL

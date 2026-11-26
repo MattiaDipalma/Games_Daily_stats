@@ -9,7 +9,7 @@
 //   ]
 // }
 //
-// Un file per gioco. "puzzle" è il numero (Krillion, Songless) oppure la data (Magnitudle).
+// Un file per gioco. "puzzle" è il numero (Krillion, Songless, Noillirk) oppure la data (Magnitudle).
 // Un giocatore ha al massimo un risultato per puzzle: vale il primo messaggio
 // inviato. Se lo stesso messaggio viene modificato su WhatsApp (stesso msgId),
 // la versione modificata sostituisce quella vecchia.
@@ -77,7 +77,7 @@ export function buildAliasMap(aliases = {}) {
 const isIsoDate = (p) => typeof p === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(p);
 const isPuzzle = (p) => (Number.isSafeInteger(p) && p > 0) || isIsoDate(p);
 
-/** Ordine dei puzzle: numeri per Krillion/Songless, date (stringhe ISO) per Magnitudle. */
+/** Ordine dei puzzle: numeri per Krillion/Songless/Noillirk, date (stringhe ISO) per Magnitudle. */
 export function comparePuzzles(a, b) {
   if (typeof a === 'number' && typeof b === 'number') return a - b;
   return String(a).localeCompare(String(b));

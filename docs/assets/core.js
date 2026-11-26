@@ -18,6 +18,8 @@ export const GAMES = {
   // Magnitudle non ha un numero: il puzzle è la data scritta nel messaggio.
   // scale: sotto il titolo del giorno c'è il righello con i punteggi di tutti.
   magnitudle: { id: 'magnitudle', name: 'Magnitudle', emoji: '📏', numbered: false, max: 500, scale: true },
+  // Noillirk: 10 domande, massimo 2500 punti (dieci risposte n. 1), cioè 14 km di quota.
+  noillirk: { id: 'noillirk', name: 'Noillirk', emoji: '🎈', numbered: true, max: 2500 },
 };
 export const GAME_IDS = Object.keys(GAMES);
 
@@ -33,6 +35,65 @@ export const KRILLION_POINTS = new Map([
   ['🏮', 85],
   ['🌟', 100],
 ]);
+
+/**
+ * Noillirk (come nel bot e su noillirk.com/scoring): ogni domanda vale secondo il posto della risposta
+ * nel tabellone (il cerchio del messaggio), moltiplicato per il peso della domanda.
+ * band: 0 fuori dal tabellone … 4 risposta n. 1; null = saltata o tempo scaduto.
+ */
+export const NOILLIRK_WEIGHTS = [1, 1, 2, 2, 2, 3, 3, 3, 4, 4];
+export const NOILLIRK_CIRCLES = new Map([
+  ['🟡', { band: 4, points: 100 }],
+  ['🟠', { band: 3, points: 75 }],
+  ['🟣', { band: 2, points: 50 }],
+  ['🔵', { band: 1, points: 25 }],
+  ['⚪', { band: 0, points: 10 }],
+  ['⚫', { band: null, points: 0 }],
+]);
+
+// Le zone della salita di Noillirk (da `from` punti fino a `to` esclusi) e la quota in metri tra cui
+// passa ognuna. Il massimo di un daily (2500 punti, 14 km) è nella corrente a getto.
+export const NOILLIRK_ZONES = [
+  { name: 'The Pond Path', from: 0, to: 40, alt: [0, 3] },
+  { name: 'Among the Trunks', from: 40, to: 100, alt: [3, 30] },
+  { name: 'The Treetops', from: 100, to: 250, alt: [30, 120] },
+  { name: 'Over the Valley', from: 250, to: 550, alt: [120, 800] },
+  { name: 'Into the Overcast', from: 550, to: 850, alt: [800, 2000] },
+  { name: 'The Snowline', from: 850, to: 1250, alt: [2000, 5000] },
+  { name: 'Inside the Storm', from: 1250, to: 1650, alt: [5000, 8000] },
+  { name: 'Everest Height', from: 1650, to: 1900, alt: [8000, 9500] },
+  { name: 'Cruising Altitude', from: 1900, to: 2200, alt: [9500, 12000] },
+  { name: 'The Jet Stream', from: 2200, to: 2800, alt: [12000, 16000] },
+];
+
+/** La zona della salita raggiunta con quei punti (il nome è quello del gioco, in inglese). */
+export function noillirkZone(points) {
+  return NOILLIRK_ZONES.find((z) => Math.max(0, points) < z.to) ?? NOILLIRK_ZONES.at(-1);
+}
+
+/**
+ * Quota raggiunta in metri, come la calcola il gioco: 1300 punti → 5375 m. Dentro una zona la quota
+ * cresce in proporzione ai punti, oppure in modo geometrico se in cima è almeno 4 volte quella in fondo.
+ */
+export function noillirkAltitude(points) {
+  if (!(points > 0)) return 0;
+  const zone = noillirkZone(points);
+  const share = (points - zone.from) / (zone.to - zone.from);
+  const [lo, hi] = zone.alt;
+  return lo > 0 && hi / lo >= 4 ? lo * (hi / lo) ** share : lo + (hi - lo) * share;
+}
+
+/** Le risposte di un risultato di Noillirk ("🟡🟠🟣…"): cerchio, posto nel tabellone, peso e punti. */
+export function noillirkRounds(grid) {
+  const rounds = [];
+  for (const circle of String(grid ?? '').replace(/\ufe0f/g, '')) {
+    const info = NOILLIRK_CIRCLES.get(circle);
+    if (!info) continue;
+    const weight = NOILLIRK_WEIGHTS[rounds.length % NOILLIRK_WEIGHTS.length];
+    rounds.push({ circle, band: info.band, weight, points: info.points * weight });
+  }
+  return rounds;
+}
 
 const I18N = {
   it: {
@@ -106,6 +167,17 @@ const I18N = {
     scoring_songless:
       'Punti per ogni genere, in base al tentativo in cui trovi la canzone (🟩): 1° 100, 2° 85, 3° 60, 4° 30, 5° 10, non trovata 0. Massimo 500.',
     scoring_magnitudle: 'Il punteggio è quello del gioco: 5 manche da 100 punti, massimo 500.',
+    scoring_noillirk:
+      "Ogni domanda vale secondo il posto della tua risposta nel tabellone (🟡 risposta n. 1 100, 🟠 2ª o 3ª 75, 🟣 top 5 50, 🔵 top 10 25, ⚪ fuori dal tabellone 10, ⚫ saltata 0), per il suo peso: ×1 le prime due, ×2 dalla 3ª alla 5ª, ×3 dalla 6ª all'8ª, ×4 le ultime due. Massimo {max} punti. Accanto ai punti c'è la quota raggiunta, come nel messaggio.",
+    noillirkQuestion: 'Domanda {n} (×{w}): {band}, {p} punti',
+    nkBand4: 'risposta n. 1',
+    nkBand3: '2ª o 3ª risposta',
+    nkBand2: 'top 5',
+    nkBand1: 'top 10',
+    nkBand0: 'fuori dal tabellone',
+    nkPass: 'saltata o tempo scaduto',
+    nkWeight: 'Domanda {n}: punti ×{w}',
+    nkAltitude: 'Quota raggiunta · {zone}',
     genres: 'Generi',
     genresHint: 'Come va il gruppo con ogni genere, nel periodo scelto.',
     colGenre: 'Genere',
@@ -124,14 +196,17 @@ const I18N = {
     homeNoData: 'Ancora nessun risultato.',
     homeLeader: 'In testa',
     homeSeasonEmpty: 'Classifica ripartita da zero',
+    homeNoLeader: 'Ancora nessuno in classifica',
     homePlayers: '{n} giocatori',
     homeOpen: 'Apri le statistiche',
     overall: 'Classifica generale',
     overallHint:
-      'Posizione media in ogni gioco (1 = primo del giorno). In classifica conta la media dei tre giochi: più è bassa, meglio è.',
+      'Posizione media in ogni gioco (1 = primo del giorno). In classifica conta la media di tutti i giochi: più è bassa, meglio è.',
     overallNote:
-      'In classifica solo chi è nella classifica di tutti e tre i giochi (almeno {n} partite negli ultimi {days} giorni in ognuno).',
-    overallEmpty: 'Ancora nessuno è nella classifica di tutti e tre i giochi.',
+      'In classifica solo chi è nella classifica di tutti i giochi (almeno {n} partite negli ultimi {days} giorni in ognuno).',
+    overallEmpty: 'Ancora nessuno è nella classifica di tutti i giochi.',
+    overallWaiting: '{games} non conta ancora: nessuno è nella sua classifica.',
+    overallWaitingMany: '{games} non contano ancora: nessuno è nella loro classifica.',
     overallTip: '{game}: {n} partite',
   },
   de: {
@@ -205,6 +280,17 @@ const I18N = {
     scoring_songless:
       'Punkte pro Genre, je nachdem bei welchem Versuch du den Song findest (🟩): 1. 100, 2. 85, 3. 60, 4. 30, 5. 10, nicht gefunden 0. Maximal 500.',
     scoring_magnitudle: 'Es zählt die Punktzahl des Spiels: 5 Runden zu 100 Punkten, maximal 500.',
+    scoring_noillirk:
+      'Jede Frage zählt nach dem Platz deiner Antwort auf der Tafel (🟡 Antwort Nr. 1 100, 🟠 2. oder 3. 75, 🟣 Top 5 50, 🔵 Top 10 25, ⚪ nicht auf der Tafel 10, ⚫ gepasst 0), mal ihrem Gewicht: ×1 die ersten zwei, ×2 die 3. bis 5., ×3 die 6. bis 8., ×4 die letzten zwei. Maximal {max} Punkte. Neben den Punkten steht die erreichte Höhe, wie in der Nachricht.',
+    noillirkQuestion: 'Frage {n} (×{w}): {band}, {p} Punkte',
+    nkBand4: 'Antwort Nr. 1',
+    nkBand3: '2. oder 3. Antwort',
+    nkBand2: 'Top 5',
+    nkBand1: 'Top 10',
+    nkBand0: 'nicht auf der Tafel',
+    nkPass: 'gepasst oder Zeit abgelaufen',
+    nkWeight: 'Frage {n}: Punkte ×{w}',
+    nkAltitude: 'Erreichte Höhe · {zone}',
     genres: 'Genres',
     genresHint: 'Wie die Gruppe in jedem Genre abschneidet, im gewählten Zeitraum.',
     colGenre: 'Genre',
@@ -223,14 +309,17 @@ const I18N = {
     homeNoData: 'Noch keine Resultate.',
     homeLeader: 'An der Spitze',
     homeSeasonEmpty: 'Rangliste neu gestartet',
+    homeNoLeader: 'Noch niemand in der Rangliste',
     homePlayers: '{n} Spieler',
     homeOpen: 'Statistiken öffnen',
     overall: 'Gesamtrangliste',
     overallHint:
-      'Durchschnittlicher Rang in jedem Spiel (1 = Tagessieger). In der Rangliste zählt der Durchschnitt der drei Spiele: je tiefer, desto besser.',
+      'Durchschnittlicher Rang in jedem Spiel (1 = Tagessieger). In der Rangliste zählt der Durchschnitt aller Spiele: je tiefer, desto besser.',
     overallNote:
-      'In der Rangliste nur, wer in der Rangliste aller drei Spiele ist (mindestens {n} Spiele in den letzten {days} Tagen in jedem).',
-    overallEmpty: 'Noch niemand ist in der Rangliste aller drei Spiele.',
+      'In der Rangliste nur, wer in der Rangliste aller Spiele ist (mindestens {n} Spiele in den letzten {days} Tagen in jedem).',
+    overallEmpty: 'Noch niemand ist in der Rangliste aller Spiele.',
+    overallWaiting: '{games} zählt noch nicht: Noch niemand ist in seiner Rangliste.',
+    overallWaitingMany: '{games} zählen noch nicht: Noch niemand ist in ihrer Rangliste.',
     overallTip: '{game}: {n} Spiele',
   },
   en: {
@@ -303,6 +392,17 @@ const I18N = {
     scoring_songless:
       'Points for each genre, by the attempt on which you find the song (🟩): 1st 100, 2nd 85, 3rd 60, 4th 30, 5th 10, not found 0. Maximum 500.',
     scoring_magnitudle: "The score is the game's own: 5 rounds of 100 points, maximum 500.",
+    scoring_noillirk:
+      'Each question scores by where your answer sits on the board (🟡 #1 answer 100, 🟠 runner-up 75, 🟣 top 5 50, 🔵 top 10 25, ⚪ off the board 10, ⚫ passed 0), times its weight: ×1 for the first two, ×2 for 3–5, ×3 for 6–8, ×4 for the last two. Maximum {max} points. Next to the points is the altitude reached, as in the message.',
+    noillirkQuestion: 'Question {n} (×{w}): {band}, {p} points',
+    nkBand4: '#1 answer',
+    nkBand3: 'runner-up',
+    nkBand2: 'top 5',
+    nkBand1: 'top 10',
+    nkBand0: 'off the board',
+    nkPass: 'passed or out of time',
+    nkWeight: 'Question {n}: points ×{w}',
+    nkAltitude: 'Altitude reached · {zone}',
     genres: 'Genres',
     genresHint: 'How the group does in each genre, in the selected period.',
     colGenre: 'Genre',
@@ -321,14 +421,17 @@ const I18N = {
     homeNoData: 'No results yet.',
     homeLeader: 'Leading',
     homeSeasonEmpty: 'Leaderboard restarted from zero',
+    homeNoLeader: 'Nobody on the leaderboard yet',
     homePlayers: '{n} players',
     homeOpen: 'Open the stats',
     overall: 'Overall leaderboard',
     overallHint:
-      'Average position in each game (1 = first of the day). The leaderboard uses the average of the three games: lower is better.',
+      'Average position in each game (1 = first of the day). The leaderboard uses the average of all the games: lower is better.',
     overallNote:
-      'Only players on the leaderboard of all three games (at least {n} games in the last {days} days in each).',
-    overallEmpty: 'Nobody is on the leaderboard of all three games yet.',
+      'Only players on the leaderboard of every game (at least {n} games in the last {days} days in each).',
+    overallEmpty: 'Nobody is on the leaderboard of every game yet.',
+    overallWaiting: "{games} doesn't count yet: nobody is on its leaderboard.",
+    overallWaitingMany: "{games} don't count yet: nobody is on their leaderboards.",
     overallTip: '{game}: {n} games',
   },
 };
@@ -390,6 +493,8 @@ export const fmtDate = (iso, opts = { day: 'numeric', month: 'short' }) =>
     : '';
 export const fmtLongDate = (iso) =>
   fmtDate(iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+/** Una quota come la scrive Noillirk: in metri fino a 10 km ("5’375 m"), poi in km con un decimale. */
+export const fmtAltitude = (m) => (m < 10000 ? `${fmt(m)} m` : `${fmt(m / 1000, 1)} km`);
 export const fmtUpdated = (iso) =>
   iso
     ? t('updated', {
@@ -445,7 +550,7 @@ export function applyStaticTexts(root = document) {
 }
 
 /**
- * Intestazione, contenuto e piè di pagina. Le linguette dei tre giochi ci sono solo nelle pagine dei
+ * Intestazione, contenuto e piè di pagina. Le linguette dei giochi ci sono solo nelle pagine dei
  * giochi: nella home portano ai giochi i riquadri.
  * @param {{ page: string, base: string, onLang: () => void }} opts
  *   page: 'home' oppure l'id del gioco; base: percorso della radice del sito ('' o '../')
@@ -535,7 +640,7 @@ export function mountShell({ page, base, onLang }) {
 
 async function loadJson(path) {
   const res = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
   return res.json();
 }
 
@@ -708,7 +813,11 @@ export async function loadGame(id, { base = '', names = new Map(), demo = false 
     updatedAt = new Date().toISOString();
   } else {
     const [data, old] = await Promise.all([
-      loadJson(`${base}data/${id}.json`),
+      // un gioco appena aggiunto non ha ancora il suo file: lo crea il bot col primo risultato
+      loadJson(`${base}data/${id}.json`).catch((err) => {
+        if (err.status === 404) return null;
+        throw err;
+      }),
       def.legacyFile ? loadJson(`${base}data/${def.legacyFile}`).catch(() => null) : null,
     ]);
     current = data?.results ?? [];
@@ -980,6 +1089,31 @@ export function gridNode(id, r) {
       );
     }
   }
+  if (id === 'noillirk') {
+    // un cerchio per domanda, col colore del posto nel tabellone (forest.css li disegna in pixel art)
+    const rounds = noillirkRounds(r.grid);
+    if (rounds.length) {
+      const tips = rounds.map((q, i) =>
+        t('noillirkQuestion', {
+          n: i + 1,
+          w: q.weight,
+          band: t(q.band === null ? 'nkPass' : `nkBand${q.band}`),
+          p: fmt(q.points),
+        }),
+      );
+      return el(
+        'span',
+        { class: 'mini nk', role: 'img', 'aria-label': tips.join('; ') },
+        rounds.map((q, i) =>
+          el(
+            'span',
+            { class: `cell nk-${q.band === null ? 'pass' : `b${q.band}`}`, title: tips[i] },
+            q.circle,
+          ),
+        ),
+      );
+    }
+  }
   if (id === 'magnitudle') {
     const rounds = magnitudleRounds(r.grid);
     if (rounds.length) {
@@ -1007,7 +1141,8 @@ export function gridNode(id, r) {
 
 /**
  * Intestazione delle caselle del risultato, una voce per casella: i generi di Songless ("TOP", "POP",
- * …) o il numero della manche di Magnitudle. Vuoto se il gioco non ha caselle.
+ * …), il numero della manche di Magnitudle o il peso delle domande di Noillirk ("×1" … "×4").
+ * Vuoto se il gioco non ha caselle.
  * @param {string} id
  * @param {object[]} results i risultati di un puzzle
  * @returns {Array<{ short: string, full: string }>}
@@ -1027,6 +1162,13 @@ export function gridLegend(id, results) {
       short: String(i + 1),
       full: t('roundName', { n: i + 1 }),
     }));
+  }
+  if (id === 'noillirk') {
+    const n = Math.max(0, ...results.map((r) => noillirkRounds(r.grid).length));
+    return Array.from({ length: n }, (_, i) => {
+      const w = NOILLIRK_WEIGHTS[i % NOILLIRK_WEIGHTS.length];
+      return { short: `×${w}`, full: t('nkWeight', { n: i + 1, w }) };
+    });
   }
   return [];
 }
@@ -1265,7 +1407,7 @@ export function lineChart(container, spec) {
 // Dati inventati per ?demo (per vedere il sito prima che arrivino risultati veri)
 
 function demoData(id) {
-  let seed = { krillion: 7, songless: 11, magnitudle: 13 }[id];
+  let seed = { krillion: 7, songless: 11, magnitudle: 13, noillirk: 17 }[id];
   const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   const gauss = () => Math.sqrt(-2 * Math.log(rand() || 1e-9)) * Math.cos(2 * Math.PI * rand());
   // nome, bravura (0–1), primo giorno
@@ -1310,6 +1452,14 @@ function demoData(id) {
         });
         const score = lines.reduce((s, l) => s + l.points, 0);
         rows.push({ puzzle: 425 + d, player, score, date, ts, grid: lines.map((l) => l.line).join('\n') });
+      } else if (id === 'noillirk') {
+        // un cerchio per domanda: più bravura, risposte più in alto nel tabellone
+        const circles = ['⚫', '⚪', '🔵', '🟣', '🟠', '🟡'];
+        const grid = NOILLIRK_WEIGHTS.map(
+          () => circles[Math.max(0, Math.min(5, Math.round(1 + level * 4.2 + gauss() * 1.3)))],
+        ).join('');
+        const score = noillirkRounds(grid).reduce((s, q) => s + q.points, 0);
+        rows.push({ puzzle: 1 + d, player, score, date, ts, grid });
       } else {
         const rounds = Array.from({ length: 5 }, () =>
           Math.max(0, Math.min(100, Math.round(level * 100 + gauss() * 28))),

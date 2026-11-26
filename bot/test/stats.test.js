@@ -160,5 +160,6 @@ test('describeChanges', () => {
     describeChanges('magnitudle', [{ player: 'Nils', puzzle: '2026-11-03', score: 246 }], []),
     'Magnitudle 2026-11-03: Nils 246',
   );
+  assert.equal(describeChanges('noillirk', [r('Nils', 37, 1300)], []), 'Noillirk #37: Nils 1300');
   assert.match(describeChanges('krillion', [r('A', 1, 1), r('B', 2, 2)], []), /^Krillion 2 puzzle/);
 });

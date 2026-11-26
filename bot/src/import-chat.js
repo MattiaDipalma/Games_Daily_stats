@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Importa lo storico da un export della chat WhatsApp (tutti e tre i giochi).
+// Importa lo storico da un export della chat WhatsApp (tutti i giochi).
 //
 //   npm run import -- percorso/_chat.txt [--dry-run] [--local] [--date-format dmy|mdy|ymd]
 //
