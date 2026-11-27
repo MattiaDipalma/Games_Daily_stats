@@ -1,7 +1,9 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-26T12:28:06.324Z",
+  "updatedAt": "2026-11-27T14:41:56.164Z",
   "results": [
+    {"puzzle":44,"player":"+41∙∙∙∙∙∙∙70","score":1990,"date":"2026-11-27","ts":1795784057,"grid":"🟡🟡🟡🟡🟡🟡🟡🟣⚪🟡","msgId":"3EB0922F83527AD505C217"},
+    {"puzzle":44,"player":"Julian","score":1725,"date":"2026-11-27","ts":1795786065,"grid":"🟡🟡🟡🟠🟠🔵🟡🟣🔵🟡","msgId":"3AE754C0008FA8B03CD5"},
     {"puzzle":43,"player":"Fuldup","score":1700,"date":"2026-11-26","ts":1795695063,"grid":"🟡🟡🟡🔵🟡🟡🟣🟡⚫🟠","msgId":"3B482222B9A189AB7E88"},
     {"puzzle":43,"player":"+49∙∙∙∙∙∙∙∙∙26","score":1450,"date":"2026-11-26","ts":1795695081,"grid":"🟡🟡🟡🟠🟡🔵🟠⚫🟣🟣","msgId":"3AA951F442BBC37E49F7"},
     {"puzzle":43,"player":"+41∙∙∙∙∙∙∙46","score":2200,"date":"2026-11-26","ts":1795695987,"grid":"🟡🟡🟡🟡🟡🟡🟡🟡🟠🟣","msgId":"3A02B3FA9BFA34404ECC"},
